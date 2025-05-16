@@ -114,7 +114,8 @@ def parse_line(line, line_reqs=None):
     else:
         line = l[0]
 
-    line_parts = re.split(r",(?=(?:[^']*'[^']*')*[^']*$)", line)
+    # line_parts = re.split(r",(?=(?:[^']*'[^']*')*[^']*$)", line)
+    line_parts = re.split(r"\s+(?=(?:[^']*'[^']*')*[^']*$)", line.strip())
 
     if line_reqs is not None:
         if len(line_parts) < line_reqs.min_values:
