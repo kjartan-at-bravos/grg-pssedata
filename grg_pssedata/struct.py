@@ -1,9 +1,10 @@
-'''data structures for encoding pss/e data files'''
+"""data structures for encoding pss/e data files"""
 
 import os
 
+
 def _guard_none(fun, val):
-    '''guards the application of a unary function for values taking None
+    """guards the application of a unary function for values taking None
     useful for typing optional values
 
     Args:
@@ -11,7 +12,7 @@ def _guard_none(fun, val):
         val: a unary value
     Returns:
         None if val was None, otherwise the application of fun to val
-    '''
+    """
 
     if val is None:
         return None
@@ -20,8 +21,8 @@ def _guard_none(fun, val):
 
 
 def _set_defaults(args, defaults):
-    assert(len(args) == len(defaults))
-    for i,val in enumerate(defaults):
+    assert len(args) == len(defaults)
+    for i, val in enumerate(defaults):
         arg = args[i]
         if arg is not None and isinstance(arg, str) and len(arg.strip()) == 0:
             args[i] = defaults[i]
@@ -30,9 +31,12 @@ def _set_defaults(args, defaults):
 
 def _check_range(value, name, component_type, component_id, lb, ub):
     if not (value >= lb and value <= ub):
-        warnings.warn('the {} value {} on {} {} is not in the valid range {} to {}'
-            .format(name, value, component_type, component_id, lb, ub),
-            PSSEDataWarning)
+        warnings.warn(
+            "the {} value {} on {} {} is not in the valid range {} to {}".format(
+                name, value, component_type, component_id, lb, ub
+            ),
+            PSSEDataWarning,
+        )
 
 
 def _check_boolean(value, name, component_type, component_id):
@@ -40,46 +44,84 @@ def _check_boolean(value, name, component_type, component_id):
 
 
 def _check_owners(component, component_type, component_id):
-    _check_range(component.o1, 'owner one', component_type, component_id, 1, 9999)
-    _check_range(component.o2, 'owner two', component_type, component_id, 1, 9999)
-    _check_range(component.o3, 'owner three', component_type, component_id, 1, 9999)
-    _check_range(component.o4, 'owner four', component_type, component_id, 1, 9999)
+    _check_range(component.o1, "owner one", component_type, component_id, 1, 9999)
+    _check_range(component.o2, "owner two", component_type, component_id, 1, 9999)
+    _check_range(component.o3, "owner three", component_type, component_id, 1, 9999)
+    _check_range(component.o4, "owner four", component_type, component_id, 1, 9999)
 
-    _check_range(component.f1, 'owner faction one', component_type, component_id, 0.0, 1.0)
-    _check_range(component.f2, 'owner faction two', component_type, component_id, 0.0, 1.0)
-    _check_range(component.f3, 'owner faction three', component_type, component_id, 0.0, 1.0)
-    _check_range(component.f4, 'owner faction four', component_type, component_id, 0.0, 1.0)
+    _check_range(
+        component.f1, "owner faction one", component_type, component_id, 0.0, 1.0
+    )
+    _check_range(
+        component.f2, "owner faction two", component_type, component_id, 0.0, 1.0
+    )
+    _check_range(
+        component.f3, "owner faction three", component_type, component_id, 0.0, 1.0
+    )
+    _check_range(
+        component.f4, "owner faction four", component_type, component_id, 0.0, 1.0
+    )
 
 
 def unquote_string(s):
-    '''strips single quotes from a PSSE string'''
-    return str(s).strip().strip('\'')
+    """strips single quotes from a PSSE string"""
+    return str(s).strip().strip("'")
+
 
 def quote_string(s):
-    '''adds PSSE single quotes to a string'''
-    return '\'{}\''.format(s)
+    """adds PSSE single quotes to a string"""
+    return "'{}'".format(s)
+
 
 def _psse_str(s):
-    '''format numbers to PSSE style'''
+    """format numbers to PSSE style"""
     return str(s)
-    #if isinstance(s, float):
+    # if isinstance(s, float):
     #    if abs(s) <= 1e-1:
     #        return "{:.5e}".format(s)
     #    elif 1e-1 < abs(s) < 1e1:
     #        return "{:.5f}".format(s)
     #    else:
     #        return "{:.3f}".format(s)
-    #else:
+    # else:
     #    return str(s)
 
+
 CASE_DEFAULTS = [0, 100.0, 33, 0, 0, 60]
+
+
 class Case(object):
-    def __init__(self, ic, sbase, rev, xfrrat, nxfrat, basfrq, record1, record2,
-        buses, loads, fixed_shunts, generators, branches, transformers, areas,
-        tt_dc_lines, vsc_dc_lines, transformer_corrections, mt_dc_lines,
-        line_groupings, zones, transfers, owners, facts, switched_shunts,
-        gnes, induction_machines):
-        '''This data structure contains lists of all the key components in a
+    def __init__(
+        self,
+        ic,
+        sbase,
+        rev,
+        xfrrat,
+        nxfrat,
+        basfrq,
+        record1,
+        record2,
+        buses,
+        loads,
+        fixed_shunts,
+        generators,
+        branches,
+        transformers,
+        areas,
+        tt_dc_lines,
+        vsc_dc_lines,
+        transformer_corrections,
+        mt_dc_lines,
+        line_groupings,
+        zones,
+        transfers,
+        owners,
+        facts,
+        switched_shunts,
+        gnes,
+        induction_machines,
+    ):
+        """This data structure contains lists of all the key components in a
         pss/e power network.  At this time, only pss/e case version 33 is supported.
 
         Args:
@@ -110,7 +152,7 @@ class Case(object):
             switched_shunts (list of SwitchedShunt): switched shunt devices
             gnes (list of TBD): general network elements
             induction_machines (list of TBD): induction machines
-        '''
+        """
 
         args = [ic, sbase, rev, xfrrat, nxfrat, basfrq]
         _set_defaults(args, CASE_DEFAULTS)
@@ -144,95 +186,122 @@ class Case(object):
         self.gnes = gnes
         self.induction_machines = induction_machines
 
-        self.component_lists = [self.buses, self.loads, self.fixed_shunts,
-            self.generators, self.branches, self.transformers, self.areas,
-            self.tt_dc_lines, self.vsc_dc_lines, self.transformer_corrections,
-            self.mt_dc_lines, self.line_groupings, self.zones, self.transfers,
-            self.owners, self.facts, self.switched_shunts, self.gnes,
-            self.induction_machines]
-
+        self.component_lists = [
+            self.buses,
+            self.loads,
+            self.fixed_shunts,
+            self.generators,
+            self.branches,
+            self.transformers,
+            self.areas,
+            self.tt_dc_lines,
+            self.vsc_dc_lines,
+            self.transformer_corrections,
+            self.mt_dc_lines,
+            self.line_groupings,
+            self.zones,
+            self.transfers,
+            self.owners,
+            self.facts,
+            self.switched_shunts,
+            self.gnes,
+            self.induction_machines,
+        ]
 
     def __str__(self):
         tmp = []
-        tmp += ['Base:\n']
-        tmp += [str(self.ic)+' '+str(self.sbase)+' '+str(self.rev)+' '+str(self.xfrrat)+' '+str(self.nxfrat)+' '+str(self.basfrq)+'\n']
-        tmp += [self.record1+'\n']
-        tmp += [self.record2+'\n']
-        tmp += ['\n']
+        tmp += ["Base:\n"]
+        tmp += [
+            str(self.ic)
+            + " "
+            + str(self.sbase)
+            + " "
+            + str(self.rev)
+            + " "
+            + str(self.xfrrat)
+            + " "
+            + str(self.nxfrat)
+            + " "
+            + str(self.basfrq)
+            + "\n"
+        ]
+        tmp += [self.record1 + "\n"]
+        tmp += [self.record2 + "\n"]
+        tmp += ["\n"]
 
-        tmp += ['Buses:\n']
-        tmp += ['\n'.join([str(x) for x in self.buses])]
-        tmp += ['\n \n']
+        tmp += ["Buses:\n"]
+        tmp += ["\n".join([str(x) for x in self.buses])]
+        tmp += ["\n \n"]
 
-        tmp += ['Loads:\n']
-        tmp += ['\n'.join([str(x) for x in self.loads])]
-        tmp += ['\n \n']
+        tmp += ["Loads:\n"]
+        tmp += ["\n".join([str(x) for x in self.loads])]
+        tmp += ["\n \n"]
 
-        tmp += ['Fixed Shunts:\n']
-        tmp += ['\n'.join([str(x) for x in self.fixed_shunts])]
-        tmp += ['\n \n']
+        tmp += ["Fixed Shunts:\n"]
+        tmp += ["\n".join([str(x) for x in self.fixed_shunts])]
+        tmp += ["\n \n"]
 
-        tmp += ['Generators:\n']
-        tmp += ['\n'.join([str(x) for x in self.generators])]
-        tmp += ['\n \n']
+        tmp += ["Generators:\n"]
+        tmp += ["\n".join([str(x) for x in self.generators])]
+        tmp += ["\n \n"]
 
-        tmp += ['Branches:\n']
-        tmp += ['\n'.join([str(x) for x in self.branches])]
-        tmp += ['\n \n']
+        tmp += ["Branches:\n"]
+        tmp += ["\n".join([str(x) for x in self.branches])]
+        tmp += ["\n \n"]
 
-        tmp += ['Transformers:\n']
-        tmp += ['\n'.join([str(x) for x in self.transformers])]
-        tmp += ['\n \n']
+        tmp += ["Transformers:\n"]
+        tmp += ["\n".join([str(x) for x in self.transformers])]
+        tmp += ["\n \n"]
 
-        tmp += ['Areas:\n']
-        tmp += ['\n'.join([str(x) for x in self.areas])]
-        tmp += ['\n \n']
+        tmp += ["Areas:\n"]
+        tmp += ["\n".join([str(x) for x in self.areas])]
+        tmp += ["\n \n"]
 
-        tmp += ['Two-Terminal DC Lines:\n']
-        tmp += ['\n'.join([str(x) for x in self.tt_dc_lines])]
-        tmp += ['\n \n']
+        tmp += ["Two-Terminal DC Lines:\n"]
+        tmp += ["\n".join([str(x) for x in self.tt_dc_lines])]
+        tmp += ["\n \n"]
 
-        tmp += ['VSC DC Lines:\n']
-        tmp += ['\n'.join([str(x) for x in self.vsc_dc_lines])]
-        tmp += ['\n \n']
+        tmp += ["VSC DC Lines:\n"]
+        tmp += ["\n".join([str(x) for x in self.vsc_dc_lines])]
+        tmp += ["\n \n"]
 
-        tmp += ['Transformer Corrections:\n']
-        tmp += ['\n'.join([str(x) for x in self.transformer_corrections])]
-        tmp += ['\n \n']
+        tmp += ["Transformer Corrections:\n"]
+        tmp += ["\n".join([str(x) for x in self.transformer_corrections])]
+        tmp += ["\n \n"]
 
-        tmp += ['Multi-Terminal DC Lines:\n']
-        tmp += ['\n'.join([str(x) for x in self.mt_dc_lines])]
-        tmp += ['\n \n']
+        tmp += ["Multi-Terminal DC Lines:\n"]
+        tmp += ["\n".join([str(x) for x in self.mt_dc_lines])]
+        tmp += ["\n \n"]
 
-        tmp += ['Line Groupings:\n']
-        tmp += ['\n'.join([str(x) for x in self.line_groupings])]
-        tmp += ['\n \n']
+        tmp += ["Line Groupings:\n"]
+        tmp += ["\n".join([str(x) for x in self.line_groupings])]
+        tmp += ["\n \n"]
 
-        tmp += ['Zones:\n']
-        tmp += ['\n'.join([str(x) for x in self.zones])]
-        tmp += ['\n \n']
+        tmp += ["Zones:\n"]
+        tmp += ["\n".join([str(x) for x in self.zones])]
+        tmp += ["\n \n"]
 
-        tmp += ['Inter Area Transfers:\n']
-        tmp += ['\n'.join([str(x) for x in self.transfers])]
-        tmp += ['\n \n']
+        tmp += ["Inter Area Transfers:\n"]
+        tmp += ["\n".join([str(x) for x in self.transfers])]
+        tmp += ["\n \n"]
 
-        tmp += ['Owners:\n']
-        tmp += ['\n'.join([str(x) for x in self.owners])]
-        tmp += ['\n \n']
+        tmp += ["Owners:\n"]
+        tmp += ["\n".join([str(x) for x in self.owners])]
+        tmp += ["\n \n"]
 
-        tmp += ['Switched Shunts:\n']
-        tmp += ['\n'.join([str(x) for x in self.switched_shunts])]
-        tmp += ['\n \n']
+        tmp += ["Switched Shunts:\n"]
+        tmp += ["\n".join([str(x) for x in self.switched_shunts])]
+        tmp += ["\n \n"]
 
-        tmp += ['Generic Network Elements:\n']
-        tmp += ['\n'.join([str(x) for x in self.gnes])]
-        tmp += ['\n \n']
+        tmp += ["Generic Network Elements:\n"]
+        tmp += ["\n".join([str(x) for x in self.gnes])]
+        tmp += ["\n \n"]
 
-        tmp += ['Induction Machines:\n']
-        tmp += ['\n'.join([str(x) for x in self.induction_machines])]
-        tmp += ['\n \n']
+        tmp += ["Induction Machines:\n"]
+        tmp += ["\n".join([str(x) for x in self.induction_machines])]
+        tmp += ["\n \n"]
 
-        return ''.join(tmp)
+        return "".join(tmp)
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -245,124 +314,184 @@ class Case(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification.
-        '''
+        """
 
         if self.rev != 33:
-            warnings.warn('only version 33 is supported, given version {}'.format(self.rev),
-            PSSEDataWarning)
+            warnings.warn(
+                "only version 33 is supported, given version {}".format(self.rev),
+                PSSEDataWarning,
+            )
 
         if len(self.record1) > 60:
-            warnings.warn('the first record has {} characters, only 60 are supported'.format(len(self.record1)),
-            PSSEDataWarning)
+            warnings.warn(
+                "the first record has {} characters, only 60 are supported".format(
+                    len(self.record1)
+                ),
+                PSSEDataWarning,
+            )
 
         if len(self.record2) > 60:
-            warnings.warn('the first record has {} characters, only 60 are supported'.format(len(self.record2)),
-            PSSEDataWarning)
+            warnings.warn(
+                "the first record has {} characters, only 60 are supported".format(
+                    len(self.record2)
+                ),
+                PSSEDataWarning,
+            )
 
-        _check_boolean(self.ic, 'case type flag', 'case', '-')
+        _check_boolean(self.ic, "case type flag", "case", "-")
 
         for component_list in self.component_lists:
             for component in component_list:
                 component.validate()
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
         psse_lines = []
-        case_datra = [str(self.ic), str(self.sbase), str(self.rev),
-            str(self.xfrrat), str(self.nxfrat), str(self.basfrq)]
-        psse_lines.append(', '.join(case_datra))
+        case_datra = [
+            str(self.ic),
+            str(self.sbase),
+            str(self.rev),
+            str(self.xfrrat),
+            str(self.nxfrat),
+            str(self.basfrq),
+        ]
+        psse_lines.append(", ".join(case_datra))
         psse_lines.append(self.record1)
         psse_lines.append(self.record2)
 
         for bus in self.buses:
-            psse_lines.append('  '+bus.to_psse())
-        psse_lines.append('0 / END OF BUS DATA, BEGIN LOAD DATA')
+            psse_lines.append("  " + bus.to_psse())
+        psse_lines.append("0 / END OF BUS DATA, BEGIN LOAD DATA")
 
         for load in self.loads:
-            psse_lines.append('  '+load.to_psse())
-        psse_lines.append('0 / END OF LOAD DATA, BEGIN FIXED SHUNT DATA')
+            psse_lines.append("  " + load.to_psse())
+        psse_lines.append("0 / END OF LOAD DATA, BEGIN FIXED SHUNT DATA")
 
         for fixed_shunt in self.fixed_shunts:
-            psse_lines.append('  '+fixed_shunt.to_psse())
-        psse_lines.append('0 / END OF FIXED SHUNT DATA, BEGIN GENERATOR DATA')
+            psse_lines.append("  " + fixed_shunt.to_psse())
+        psse_lines.append("0 / END OF FIXED SHUNT DATA, BEGIN GENERATOR DATA")
 
         for gen in self.generators:
-            psse_lines.append('  '+gen.to_psse())
-        psse_lines.append('0 / END OF GENERATOR DATA, BEGIN BRANCH DATA')
+            psse_lines.append("  " + gen.to_psse())
+        psse_lines.append("0 / END OF GENERATOR DATA, BEGIN BRANCH DATA")
 
         for branch in self.branches:
-            psse_lines.append('  '+branch.to_psse())
-        psse_lines.append('0 / END OF BRANCH DATA, BEGIN TRANSFORMER DATA')
+            psse_lines.append("  " + branch.to_psse())
+        psse_lines.append("0 / END OF BRANCH DATA, BEGIN TRANSFORMER DATA")
 
         for transformer in self.transformers:
-            psse_lines.append('  '+transformer.to_psse())
-        psse_lines.append('0 / END OF TRANSFORMER DATA, BEGIN AREA DATA')
+            psse_lines.append("  " + transformer.to_psse())
+        psse_lines.append("0 / END OF TRANSFORMER DATA, BEGIN AREA DATA")
 
         for area in self.areas:
-            psse_lines.append('  '+area.to_psse())
-        psse_lines.append('0 / END OF AREA DATA, BEGIN TWO-TERMINAL DC DATA')
+            psse_lines.append("  " + area.to_psse())
+        psse_lines.append("0 / END OF AREA DATA, BEGIN TWO-TERMINAL DC DATA")
 
         for tt_dc_line in self.tt_dc_lines:
-            psse_lines.append('  '+tt_dc_line.to_psse())
-        psse_lines.append('0 / END OF TWO-TERMINAL DC DATA, BEGIN VOLTAGE SOURCE CONVERTER DATA')
+            psse_lines.append("  " + tt_dc_line.to_psse())
+        psse_lines.append(
+            "0 / END OF TWO-TERMINAL DC DATA, BEGIN VOLTAGE SOURCE CONVERTER DATA"
+        )
 
         for vsc_dc_line in self.vsc_dc_lines:
-            psse_lines.append('  '+vsc_dc_line.to_psse())
-        psse_lines.append('0 / END OF VOLTAGE SOURCE CONVERTER DATA, BEGIN IMPEDANCE CORRECTION DATA')
+            psse_lines.append("  " + vsc_dc_line.to_psse())
+        psse_lines.append(
+            "0 / END OF VOLTAGE SOURCE CONVERTER DATA, BEGIN IMPEDANCE CORRECTION DATA"
+        )
 
         for transformer_correction in self.transformer_corrections:
-            psse_lines.append('  '+transformer_correction.to_psse())
-        psse_lines.append('0 / END OF IMPEDANCE CORRECTION DATA, BEGIN MULTI-TERMINAL DC DATA')
+            psse_lines.append("  " + transformer_correction.to_psse())
+        psse_lines.append(
+            "0 / END OF IMPEDANCE CORRECTION DATA, BEGIN MULTI-TERMINAL DC DATA"
+        )
 
         for mt_dc_line in self.mt_dc_lines:
-            psse_lines.append('  '+mt_dc_line.to_psse())
-        psse_lines.append('0 / END OF MULTI-TERMINAL DC DATA, BEGIN MULTI-SECTION LINE DATA')
+            psse_lines.append("  " + mt_dc_line.to_psse())
+        psse_lines.append(
+            "0 / END OF MULTI-TERMINAL DC DATA, BEGIN MULTI-SECTION LINE DATA"
+        )
 
         for line_grouping in self.line_groupings:
-            psse_lines.append('  '+line_grouping.to_psse())
-        psse_lines.append('0 / END OF MULTI-SECTION LINE DATA, BEGIN ZONE DATA')
+            psse_lines.append("  " + line_grouping.to_psse())
+        psse_lines.append("0 / END OF MULTI-SECTION LINE DATA, BEGIN ZONE DATA")
 
         for zone in self.zones:
-            psse_lines.append('  '+zone.to_psse())
-        psse_lines.append('0 / END OF ZONE DATA, BEGIN INTER-AREA TRANSFER DATA')
+            psse_lines.append("  " + zone.to_psse())
+        psse_lines.append("0 / END OF ZONE DATA, BEGIN INTER-AREA TRANSFER DATA")
 
         for transfer in self.transfers:
-            psse_lines.append('  '+transfer.to_psse())
-        psse_lines.append('0 / END OF INTER-AREA TRANSFER DATA, BEGIN OWNER DATA')
+            psse_lines.append("  " + transfer.to_psse())
+        psse_lines.append("0 / END OF INTER-AREA TRANSFER DATA, BEGIN OWNER DATA")
 
         for owner in self.owners:
-            psse_lines.append('  '+owner.to_psse())
-        psse_lines.append('0 / END OF OWNER DATA, BEGIN FACTS CONTROL DEVICE DATA')
+            psse_lines.append("  " + owner.to_psse())
+        psse_lines.append("0 / END OF OWNER DATA, BEGIN FACTS CONTROL DEVICE DATA")
 
         for fact in self.facts:
-            psse_lines.append('  '+fact.to_psse())
-        psse_lines.append('0 / END OF FACTS CONTROL DEVICE DATA, BEGIN SWITCHED SHUNT DATA')
+            psse_lines.append("  " + fact.to_psse())
+        psse_lines.append(
+            "0 / END OF FACTS CONTROL DEVICE DATA, BEGIN SWITCHED SHUNT DATA"
+        )
 
         for switched_shunt in self.switched_shunts:
-            psse_lines.append('  '+switched_shunt.to_psse())
-        psse_lines.append('0 / END OF SWITCHED SHUNT DATA, BEGIN GNE DEVICE DATA')
+            psse_lines.append("  " + switched_shunt.to_psse())
+        psse_lines.append("0 / END OF SWITCHED SHUNT DATA, BEGIN GNE DEVICE DATA")
 
         for gne in self.gnes:
-            psse_lines.append('  '+gne.to_psse())
-        psse_lines.append('0 / END OF GNE DEVICE DATA, BEGIN INDUCTION MACHINE DATA')
+            psse_lines.append("  " + gne.to_psse())
+        psse_lines.append("0 / END OF GNE DEVICE DATA, BEGIN INDUCTION MACHINE DATA")
 
         for induction_machine in self.induction_machines:
-            psse_lines.append('  '+induction_machine.to_psse())
-        psse_lines.append('0 / END INDUCTION MACHINE DATA')
+            psse_lines.append("  " + induction_machine.to_psse())
+        psse_lines.append("0 / END INDUCTION MACHINE DATA")
 
-        psse_lines.append('Q')
+        psse_lines.append("Q")
 
-        return '\n'.join(psse_lines)
-
+        return "\n".join(psse_lines)
 
 
 BUS_DEFAULTS = ["            ", 0.0, 1, 1, 1, 1, 1.0, 0.0, 1.1, 0.9, 1.1, 0.9]
+
+
 class Bus(object):
-    def __init__(self, i, name, basekv, ide, area, zone, owner, vm, va, nvhi=1.1, nvlo=0.9, evhi=1.1, evlo=0.9):
-        '''This data structure contains bus parameters.
+    __slots__ = (
+        "i",
+        "name",
+        "basekv",
+        "ide",
+        "area",
+        "zone",
+        "owner",
+        "vm",
+        "va",
+        "nvhi",
+        "nvlo",
+        "evhi",
+        "evlo",
+        "comment",
+    )
+
+    def __init__(
+        self,
+        i,
+        name,
+        basekv,
+        ide,
+        area,
+        zone,
+        owner,
+        vm,
+        va,
+        nvhi=1.1,
+        nvlo=0.9,
+        evhi=1.1,
+        evlo=0.9,
+        comment: str = "",
+    ):
+        """This data structure contains bus parameters.
 
         Args:
             i (int): unique bus identifier 1-999997
@@ -378,7 +507,7 @@ class Bus(object):
             nvlo (float): voltage magnitude lower bound, normal conditions (volts p.u.) (default = 0.9)
             evhi (float): voltage magnitude upper bound, emergency conditions (volts p.u.) (default = 1.1)
             evlo (float): voltage magnitude lower bound, emergency conditions (volts p.u.) (default = 0.9)
-        '''
+        """
 
         args = [name, basekv, ide, area, zone, owner, vm, va, nvhi, nvlo, evhi, evlo]
         _set_defaults(args, BUS_DEFAULTS)
@@ -397,12 +526,25 @@ class Bus(object):
         self.nvlo = float(nvlo)
         self.evhi = float(evhi)
         self.evlo = float(evlo)
+        self.comment = str(comment)
 
     def __str__(self):
-        data = [self.i, self.name, self.basekv, self.ide, self.area, self.zone,
-                self.owner, self.vm, self.va, self.nvhi, self.nvlo, self.evhi,
-                self.evlo]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.i,
+            self.name,
+            self.basekv,
+            self.ide,
+            self.area,
+            self.zone,
+            self.owner,
+            self.vm,
+            self.va,
+            self.nvhi,
+            self.nvlo,
+            self.evhi,
+            self.evlo,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -415,17 +557,20 @@ class Bus(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
 
         if not (self.i >= 1 and self.i <= 999997):
-            warnings.warn('bus {} is not in the valid range 1 to 999997'.format(self.i), PSSEDataWarning)
+            warnings.warn(
+                "bus {} is not in the valid range 1 to 999997".format(self.i),
+                PSSEDataWarning,
+            )
 
-        #_check_range(self.i, 'id', 'bus', self.i, 1, 999997)
-        _check_range(self.area, 'area', 'bus', self.i, 1, 9999)
-        _check_range(self.zone, 'zone', 'bus', self.i, 1, 9999)
-        _check_range(self.owner, 'owner', 'bus', self.i, 1, 9999)
+        # _check_range(self.i, 'id', 'bus', self.i, 1, 999997)
+        _check_range(self.area, "area", "bus", self.i, 1, 9999)
+        _check_range(self.zone, "zone", "bus", self.i, 1, 9999)
+        _check_range(self.owner, "owner", "bus", self.i, 1, 9999)
 
         # if not (self.area >= 1 and self.area <= 9999):
         #     warnings.warn('the area %d on bus %d is not in the valid range 1 to 9999' %
@@ -439,21 +584,71 @@ class Bus(object):
         #     warnings.warn('the owner %d on bus %d is not in the valid range 1 to 9999' %
         #         (self.owner, self.i), PSSEDataWarning)
 
-
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
-        data = [self.i, quote_string(self.name), self.basekv, self.ide,
-                self.area, self.zone, self.owner, self.vm, self.va,
-                self.nvhi, self.nvlo, self.evhi, self.evlo]
+        data = [
+            self.i,
+            quote_string(self.name),
+            self.basekv,
+            self.ide,
+            self.area,
+            self.zone,
+            self.owner,
+            self.vm,
+            self.va,
+            self.nvhi,
+            self.nvlo,
+            self.evhi,
+            self.evlo,
+        ]
 
-        return ', '.join([_psse_str(x) for x in data])
+        return ", ".join([_psse_str(x) for x in data])
 
 
 LOAD_DEFAULTS = [1, 1, 1, 1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, 1, 0]
+
+
 class Load(object):
-    def __init__(self, index, i, id, status, area, zone, pl, ql, ip, iq, yp, yq, owner, scale, intrpt="0"):
-        '''This data structure contains load parameters.
+    __slots__ = (
+        "index",
+        "i",
+        "id",
+        "status",
+        "area",
+        "zone",
+        "pl",
+        "ql",
+        "ip",
+        "iq",
+        "yp",
+        "yq",
+        "owner",
+        "scale",
+        "intrpt",
+        "comment",
+    )
+
+    def __init__(
+        self,
+        index,
+        i,
+        id,
+        status,
+        area,
+        zone,
+        pl,
+        ql,
+        ip,
+        iq,
+        yp,
+        yq,
+        owner,
+        scale,
+        intrpt="0",
+        comment: str = "",
+    ):
+        """This data structure contains load parameters.
 
         Args:
             index (int): unique load identifier
@@ -471,7 +666,7 @@ class Load(object):
             owner (int): owner id, 1-9999 (default = the owner of the connecting bus)
             scale (int): scaling flag (scalable = 1, fixed = 0) (default = 1)
             intrpt (int): interruptible flag, (interruptible = 1, non-interruptible = 0) (optional, default = 0)
-        '''
+        """
 
         args = [id, status, area, zone, pl, ql, ip, iq, yp, yq, owner, scale, intrpt]
         _set_defaults(args, LOAD_DEFAULTS)
@@ -492,13 +687,27 @@ class Load(object):
         self.owner = int(owner)
         self.scale = int(scale)
         self.intrpt = int(intrpt)
-
+        self.comment = str(comment)
 
     def __str__(self):
-        data = [self.index, self.i, self.id, self.status, self.area, self.zone,
-            self.pl, self.ql, self.ip, self.iq, self.yp, self.yq, self.owner,
-            self.scale, self.intrpt]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.index,
+            self.i,
+            self.id,
+            self.status,
+            self.area,
+            self.zone,
+            self.pl,
+            self.ql,
+            self.ip,
+            self.iq,
+            self.yp,
+            self.yq,
+            self.owner,
+            self.scale,
+            self.intrpt,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -511,30 +720,48 @@ class Load(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
-        _check_boolean(self.status, 'status', 'load', self.index)
+        """
+        _check_boolean(self.status, "status", "load", self.index)
 
-        _check_range(self.i, 'bus identifier', 'load', self.index, 1, 999997)
-        _check_range(self.area, 'area', 'load', self.index, 1, 9999)
-        _check_range(self.zone, 'zone', 'load', self.index, 1, 9999)
-        _check_range(self.owner, 'owner', 'load', self.index, 1, 9999)
+        _check_range(self.i, "bus identifier", "load", self.index, 1, 999997)
+        _check_range(self.area, "area", "load", self.index, 1, 9999)
+        _check_range(self.zone, "zone", "load", self.index, 1, 9999)
+        _check_range(self.owner, "owner", "load", self.index, 1, 9999)
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
-        data = [self.i, quote_string(self.id), self.status, self.area,
-            self.zone, self.pl, self.ql, self.ip, self.iq, self.yp, self.yq,
-            self.owner, self.scale, self.intrpt]
+        data = [
+            self.i,
+            quote_string(self.id),
+            self.status,
+            self.area,
+            self.zone,
+            self.pl,
+            self.ql,
+            self.ip,
+            self.iq,
+            self.yp,
+            self.yq,
+            self.owner,
+            self.scale,
+            self.intrpt,
+        ]
 
-        return ', '.join([_psse_str(x) for x in data])
+        return ", ".join([_psse_str(x) for x in data])
 
 
 FIXED_SHUNT_DEFAULTS = [1, 1, 0.0, 0.0]
+
+
 class FixedShunt(object):
-    def __init__(self, index, i, id, status, gl, bl):
-        '''This data structure contains fixed shunt parameters
+
+    __slots__ = ("index", "i", "id", "status", "gl", "bl", "comment")
+
+    def __init__(self, index, i, id, status, gl, bl, comment: str = ""):
+        """This data structure contains fixed shunt parameters
 
         Args:
             index (int): unique fixed shunt identifier
@@ -543,7 +770,7 @@ class FixedShunt(object):
             status (int): fixed shunt status (in service = 1, out of service = 0)
             gl (float): the conductance to ground in MW at one per unit voltage (default = 0.0)
             bl (float): the susceptance to ground in MVar at one per unit voltage (default = 0.0)
-        '''
+        """
 
         args = [id, status, gl, bl]
         _set_defaults(args, FIXED_SHUNT_DEFAULTS)
@@ -555,10 +782,11 @@ class FixedShunt(object):
         self.status = int(status)
         self.gl = float(gl)
         self.bl = float(bl)
+        self.comment = str(comment)
 
     def __str__(self):
         data = [self.index, self.i, self.id, self.status, self.gl, self.bl]
-        return ' '.join([str(x) for x in data])
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -571,26 +799,114 @@ class FixedShunt(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
-        _check_boolean(self.status, 'status', 'fixed shunt', self.index)
-        _check_range(self.i, 'bus identifier', 'fixed shunt', self.index, 1, 999997)
+        """
+        _check_boolean(self.status, "status", "fixed shunt", self.index)
+        _check_range(self.i, "bus identifier", "fixed shunt", self.index, 1, 999997)
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
         data = [self.i, quote_string(self.id), self.status, self.gl, self.bl]
 
-        return ', '.join([_psse_str(x) for x in data])
+        return ", ".join([_psse_str(x) for x in data])
 
 
-SWITCHED_SHUNT_DEFAULTS = [1, 0, 1, 1.0, 1.0, 0, 100.0, "", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+SWITCHED_SHUNT_DEFAULTS = [
+    1,
+    0,
+    1,
+    1.0,
+    1.0,
+    0,
+    100.0,
+    "",
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+]
+
+
 class SwitchedShunt(object):
-    def __init__(self, index, i, modsw, adjm, stat, vswhi, vswlo, swrem, rmpct, rmidnt, binit, n1, b1,
-                    n2=None, b2=None, n3=None, b3=None, n4=None, b4=None, n5=None, b5=None,
-                    n6=None, b6=None, n7=None, b7=None, n8=None, b8=None):
-        '''This data structure contains switch shunt parameters
+
+    __slots__ = (
+        "index",
+        "i",
+        "modsw",
+        "adjm",
+        "stat",
+        "vswhi",
+        "vswlo",
+        "swrem",
+        "rmpct",
+        "rmidnt",
+        "binit",
+        "n1",
+        "b1",
+        "n2",
+        "b2",
+        "n3",
+        "b3",
+        "n4",
+        "b4",
+        "n5",
+        "b5",
+        "n6",
+        "b6",
+        "n7",
+        "b7",
+        "n8",
+        "b8",
+        "comment",
+    )
+
+    def __init__(
+        self,
+        index,
+        i,
+        modsw,
+        adjm,
+        stat,
+        vswhi,
+        vswlo,
+        swrem,
+        rmpct,
+        rmidnt,
+        binit,
+        n1,
+        b1,
+        n2=None,
+        b2=None,
+        n3=None,
+        b3=None,
+        n4=None,
+        b4=None,
+        n5=None,
+        b5=None,
+        n6=None,
+        b6=None,
+        n7=None,
+        b7=None,
+        n8=None,
+        b8=None,
+        comment: str = "",
+    ):
+        """This data structure contains switch shunt parameters
 
         Args:
             index (int): unique switched shunt identifier
@@ -620,11 +936,63 @@ class SwitchedShunt(object):
             b7 (float): the susceptance increment of block 7 (default = 0.0)
             n8 (int): the number of steps in block 8 (default = 0)
             b8 (float): the susceptance increment of block 8 (default = 0.0)
-        '''
+        """
 
-        args = [modsw, adjm, stat, vswhi, vswlo, swrem, rmpct, rmidnt, binit, n1, b1, n2, b2, n3, b3, n4, b4, n5, b5, n6, b6, n7, b7, n8, b8]
+        args = [
+            modsw,
+            adjm,
+            stat,
+            vswhi,
+            vswlo,
+            swrem,
+            rmpct,
+            rmidnt,
+            binit,
+            n1,
+            b1,
+            n2,
+            b2,
+            n3,
+            b3,
+            n4,
+            b4,
+            n5,
+            b5,
+            n6,
+            b6,
+            n7,
+            b7,
+            n8,
+            b8,
+        ]
         _set_defaults(args, SWITCHED_SHUNT_DEFAULTS)
-        modsw, adjm, stat, vswhi, vswlo, swrem, rmpct, rmidnt, binit, n1, b1, n2, b2, n3, b3, n4, b4, n5, b5, n6, b6, n7, b7, n8, b8 = args
+        (
+            modsw,
+            adjm,
+            stat,
+            vswhi,
+            vswlo,
+            swrem,
+            rmpct,
+            rmidnt,
+            binit,
+            n1,
+            b1,
+            n2,
+            b2,
+            n3,
+            b3,
+            n4,
+            b4,
+            n5,
+            b5,
+            n6,
+            b6,
+            n7,
+            b7,
+            n8,
+            b8,
+        ) = args
 
         self.index = int(index)
         self.i = int(i)
@@ -653,13 +1021,39 @@ class SwitchedShunt(object):
         self.b7 = _guard_none(float, b7)
         self.n8 = _guard_none(int, n8)
         self.b8 = _guard_none(float, b8)
+        self.comment = str(comment)
 
     def __str__(self):
-        data = [self.index, self.i, self.modsw, self.adjm, self.stat, self.vswhi,
-                self.vswlo, self.swrem, self.rmpct, self.rmidnt, self.binit,
-                self.n1, self.b1, self.n2, self.b2, self.n3, self.b3, self.n4, self.b4,
-                self.n5, self.b5, self.n6, self.b6, self.n7, self.b7, self.n8, self.b8]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.index,
+            self.i,
+            self.modsw,
+            self.adjm,
+            self.stat,
+            self.vswhi,
+            self.vswlo,
+            self.swrem,
+            self.rmpct,
+            self.rmidnt,
+            self.binit,
+            self.n1,
+            self.b1,
+            self.n2,
+            self.b2,
+            self.n3,
+            self.b3,
+            self.n4,
+            self.b4,
+            self.n5,
+            self.b5,
+            self.n6,
+            self.b6,
+            self.n7,
+            self.b7,
+            self.n8,
+            self.b8,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -672,30 +1066,54 @@ class SwitchedShunt(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
-        _check_boolean(self.stat, 'status', 'switched shunt', self.index)
-        _check_range(self.i, 'bus identifier', 'switched shunt', self.index, 1, 999997)
-        _check_range(self.modsw, 'control mode', 'switched shunt', self.index, 0, 6)
-        _check_boolean(self.adjm, 'status', 'switched shunt', self.index)
-        _check_range(self.swrem, 'bus identifier', 'switched shunt', self.index, 0, 999997)
-        _check_range(self.rmpct, 'reactive percentage', 'switched shunt', self.index, 0.0, 1.0)
+        """
+        _check_boolean(self.stat, "status", "switched shunt", self.index)
+        _check_range(self.i, "bus identifier", "switched shunt", self.index, 1, 999997)
+        _check_range(self.modsw, "control mode", "switched shunt", self.index, 0, 6)
+        _check_boolean(self.adjm, "status", "switched shunt", self.index)
+        _check_range(
+            self.swrem, "bus identifier", "switched shunt", self.index, 0, 999997
+        )
+        _check_range(
+            self.rmpct, "reactive percentage", "switched shunt", self.index, 0.0, 1.0
+        )
 
-        for key in ['n1','n2','n3','n4','n5','n6','n7','n8']:
+        for key in ["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8"]:
             value = getattr(self, key)
             if value is not None:
-                _check_range(value, 'bank {}'.format(key), 'switched shunt', self.index, 0, 9)
+                _check_range(
+                    value, "bank {}".format(key), "switched shunt", self.index, 0, 9
+                )
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
-        data = [self.i, self.modsw, self.adjm, self.stat, self.vswhi,
-                self.vswlo, self.swrem, self.rmpct, quote_string(self.rmidnt), self.binit,
-                self.n1, self.b1]
+        data = [
+            self.i,
+            self.modsw,
+            self.adjm,
+            self.stat,
+            self.vswhi,
+            self.vswlo,
+            self.swrem,
+            self.rmpct,
+            quote_string(self.rmidnt),
+            self.binit,
+            self.n1,
+            self.b1,
+        ]
 
-        ids = [('n2', 'b2'), ('n3', 'b3'), ('n4', 'b4'), ('n5', 'b5'),
-            ('n6', 'b6'), ('n7', 'b7'), ('n8', 'b8')]
+        ids = [
+            ("n2", "b2"),
+            ("n3", "b3"),
+            ("n4", "b4"),
+            ("n5", "b5"),
+            ("n6", "b6"),
+            ("n7", "b7"),
+            ("n8", "b8"),
+        ]
         for ni, bi in ids:
             ni_value = getattr(self, ni)
             bi_value = getattr(self, bi)
@@ -703,15 +1121,109 @@ class SwitchedShunt(object):
                 data.append(ni_value)
                 data.append(bi_value)
 
-        return ', '.join([_psse_str(x) for x in data])
+        return ", ".join([_psse_str(x) for x in data])
 
 
-GENERATOR_DEFAULTS = [1, 0.0, 0.0, 9999.0, -9999.0, 1.0, 0, 100.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1, 100.0, 9999.0, -9999.0, 1, 0, 0, 0, 1.0, 1.0, 1.0, 1.0, 0, 1.0]
+GENERATOR_DEFAULTS = [
+    1,
+    0.0,
+    0.0,
+    9999.0,
+    -9999.0,
+    1.0,
+    0,
+    100.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    1.0,
+    1,
+    100.0,
+    9999.0,
+    -9999.0,
+    1,
+    0,
+    0,
+    0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    0,
+    1.0,
+]
+
+
 class Generator(object):
-    def __init__(self, index, i, id, pg, qg, qt, qb, vs, ireg, mbase, zr, zx,
-                    rt, xt, gtap, stat, rmpct, pt, pb, o1=1, f1=0, o2=0, f2=0, o3=1.0, f3=1.0, o4=1.0, f4=1.0,
-                    wmod=0, wpf=1.0):
-        '''This data structure contains generator parameters.
+
+    __slots__ = (
+        "index",
+        "i",
+        "id",
+        "pg",
+        "qg",
+        "qt",
+        "qb",
+        "vs",
+        "ireg",
+        "mbase",
+        "zr",
+        "zx",
+        "rt",
+        "xt",
+        "gtap",
+        "stat",
+        "rmpct",
+        "pt",
+        "pb",
+        "o1",
+        "f1",
+        "o2",
+        "f2",
+        "o3",
+        "f3",
+        "o4",
+        "f4",
+        "wmod",
+        "wpf",
+        "comment",
+    )
+
+    def __init__(
+        self,
+        index,
+        i,
+        id,
+        pg,
+        qg,
+        qt,
+        qb,
+        vs,
+        ireg,
+        mbase,
+        zr,
+        zx,
+        rt,
+        xt,
+        gtap,
+        stat,
+        rmpct,
+        pt,
+        pb,
+        o1=1,
+        f1=0,
+        o2=0,
+        f2=0,
+        o3=1.0,
+        f3=1.0,
+        o4=1.0,
+        f4=1.0,
+        wmod=0,
+        wpf=1.0,
+        comment: str = "",
+    ):
+        """This data structure contains generator parameters.
 
         Args:
             index (int): unique generator identifier
@@ -743,11 +1255,67 @@ class Generator(object):
             f4 (float): owner four fraction of total ownership (default = 1.0)
             wmod (int): wind machine control mode, not-wind = 0, Q limits = 1, P limits as Q limits = 2, power factor = 4
             wpf (float): wind power factor (used when wmod is 2 or 3)
-        '''
+        """
 
-        args = [id, pg, qg, qt, qb, vs, ireg, mbase, zr, zx, rt, xt, gtap, stat, rmpct, pt, pb, o1, f1, o2, f2, o3, f3, o4, f4, wmod, wpf]
+        args = [
+            id,
+            pg,
+            qg,
+            qt,
+            qb,
+            vs,
+            ireg,
+            mbase,
+            zr,
+            zx,
+            rt,
+            xt,
+            gtap,
+            stat,
+            rmpct,
+            pt,
+            pb,
+            o1,
+            f1,
+            o2,
+            f2,
+            o3,
+            f3,
+            o4,
+            f4,
+            wmod,
+            wpf,
+        ]
         _set_defaults(args, GENERATOR_DEFAULTS)
-        id, pg, qg, qt, qb, vs, ireg, mbase, zr, zx, rt, xt, gtap, stat, rmpct, pt, pb, o1, f1, o2, f2, o3, f3, o4, f4, wmod, wpf = args
+        (
+            id,
+            pg,
+            qg,
+            qt,
+            qb,
+            vs,
+            ireg,
+            mbase,
+            zr,
+            zx,
+            rt,
+            xt,
+            gtap,
+            stat,
+            rmpct,
+            pt,
+            pb,
+            o1,
+            f1,
+            o2,
+            f2,
+            o3,
+            f3,
+            o4,
+            f4,
+            wmod,
+            wpf,
+        ) = args
 
         self.index = int(index)
         self.i = int(i)
@@ -778,14 +1346,41 @@ class Generator(object):
         self.f4 = float(f4)
         self.wmod = int(wmod)
         self.wpf = float(wpf)
+        self.comment = str(comment)
 
     def __str__(self):
-        data = [self.index, self.i, self.id, self.pg, self.qg, self.qt, self.qb,
-                self.vs, self.ireg, self.mbase, self.zr, self.zx, self.rt, self.xt,
-                self.gtap, self.stat, self.rmpct, self.pt, self.pb, self.o1,
-                self.f1, self.o2, self.f2, self.o3, self.f3, self.o4, self.f4,
-                self.wmod, self.wpf]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.index,
+            self.i,
+            self.id,
+            self.pg,
+            self.qg,
+            self.qt,
+            self.qb,
+            self.vs,
+            self.ireg,
+            self.mbase,
+            self.zr,
+            self.zx,
+            self.rt,
+            self.xt,
+            self.gtap,
+            self.stat,
+            self.rmpct,
+            self.pt,
+            self.pb,
+            self.o1,
+            self.f1,
+            self.o2,
+            self.f2,
+            self.o3,
+            self.f3,
+            self.o4,
+            self.f4,
+            self.wmod,
+            self.wpf,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -798,15 +1393,17 @@ class Generator(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
-        _check_boolean(self.stat, 'stat', 'generator', self.index)
+        """
+        _check_boolean(self.stat, "stat", "generator", self.index)
 
-        _check_range(self.i, 'bus identifier', 'generator', self.index, 1, 999997)
-        _check_range(self.ireg, 'regulator bus identifier', 'generator', self.index, 1, 999997)
+        _check_range(self.i, "bus identifier", "generator", self.index, 1, 999997)
+        _check_range(
+            self.ireg, "regulator bus identifier", "generator", self.index, 1, 999997
+        )
 
-        _check_owners(self, 'generator', self.index)
+        _check_owners(self, "generator", self.index)
         # _check_range(self.o1, 'owner one', 'generator', self.index, 1, 9999)
         # _check_range(self.o2, 'owner two', 'generator', self.index, 1, 9999)
         # _check_range(self.o3, 'owner three', 'generator', self.index, 1, 9999)
@@ -817,25 +1414,131 @@ class Generator(object):
         # _check_range(self.f3, 'owner faction three', 'generator', self.index, 0.0, 1.0)
         # _check_range(self.f4, 'owner faction four', 'generator', self.index, 0.0, 1.0)
 
-        _check_range(self.wmod, 'wmod', 'generator', self.index, 0, 3)
-        _check_range(self.wpf, 'wpf', 'generator', self.index, 0.0, 1.0)
+        _check_range(self.wmod, "wmod", "generator", self.index, 0, 3)
+        _check_range(self.wpf, "wpf", "generator", self.index, 0.0, 1.0)
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
-        data = [self.i, quote_string(self.id), self.pg, self.qg, self.qt, self.qb,
-                self.vs, self.ireg, self.mbase, self.zr, self.zx, self.rt, self.xt,
-                self.gtap, self.stat, self.rmpct, self.pt, self.pb, self.o1, self.f1,
-                self.o2, self.f2, self.o3, self.f3, self.o4, self.f4, self.wmod,
-                self.wpf]
+        data = [
+            self.i,
+            quote_string(self.id),
+            self.pg,
+            self.qg,
+            self.qt,
+            self.qb,
+            self.vs,
+            self.ireg,
+            self.mbase,
+            self.zr,
+            self.zx,
+            self.rt,
+            self.xt,
+            self.gtap,
+            self.stat,
+            self.rmpct,
+            self.pt,
+            self.pb,
+            self.o1,
+            self.f1,
+            self.o2,
+            self.f2,
+            self.o3,
+            self.f3,
+            self.o4,
+            self.f4,
+            self.wmod,
+            self.wpf,
+        ]
 
-        return ', '.join([_psse_str(x) for x in data])
+        return ", ".join([_psse_str(x) for x in data])
 
 
-BRANCH_DEFAULTS = [1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, 1, 0.0, 1, 1.0, 0, 1.0, 0, 1.0, 0, 1.0]
+BRANCH_DEFAULTS = [
+    1,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1,
+    1,
+    0.0,
+    1,
+    1.0,
+    0,
+    1.0,
+    0,
+    1.0,
+    0,
+    1.0,
+]
+
+
 class Branch(object):
-    def __init__(self, index, i, j, ckt, r, x, b, ratea, rateb, ratec, gi, bi, gj, bj, st, met, len, o1, f1, o2=0, f2=1.0, o3=0, f3=1.0, o4=0, f4=1.0):
-        '''This data structure contains branch parameters.
+
+    __slots__ = (
+        "index",
+        "i",
+        "j",
+        "ckt",
+        "r",
+        "x",
+        "b",
+        "ratea",
+        "rateb",
+        "ratec",
+        "gi",
+        "bi",
+        "gj",
+        "bj",
+        "st",
+        "met",
+        "len",
+        "o1",
+        "f1",
+        "o2",
+        "f2",
+        "o3",
+        "f3",
+        "o4",
+        "f4",
+        "comment",
+    )
+
+    def __init__(
+        self,
+        index,
+        i,
+        j,
+        ckt,
+        r,
+        x,
+        b,
+        ratea,
+        rateb,
+        ratec,
+        gi,
+        bi,
+        gj,
+        bj,
+        st,
+        met,
+        len,
+        o1,
+        f1,
+        o2=0,
+        f2=1.0,
+        o3=0,
+        f3=1.0,
+        o4=0,
+        f4=1.0,
+        comment: str = "",
+    ):
+        """This data structure contains branch parameters.
 
         Args:
             index (int): unique branch identifier
@@ -863,11 +1566,53 @@ class Branch(object):
             f3 (float): owner three fraction of total ownership (default = 1.0)
             o4 (int): owner four id, 1-9999 (default = the owner of the connecting bus)
             f4 (float): owner four fraction of total ownership (default = 1.0)
-        '''
+        """
 
-        args = [ckt, b, ratea, rateb, ratec, gi, bi, gj, bj, st, met, len, o1, f1, o2, f2, o3, f3, o4, f4]
+        args = [
+            ckt,
+            b,
+            ratea,
+            rateb,
+            ratec,
+            gi,
+            bi,
+            gj,
+            bj,
+            st,
+            met,
+            len,
+            o1,
+            f1,
+            o2,
+            f2,
+            o3,
+            f3,
+            o4,
+            f4,
+        ]
         _set_defaults(args, BRANCH_DEFAULTS)
-        ckt, b, ratea, rateb, ratec, gi, bi, gj, bj, st, met, len, o1, f1, o2, f2, o3, f3, o4, f4 = args
+        (
+            ckt,
+            b,
+            ratea,
+            rateb,
+            ratec,
+            gi,
+            bi,
+            gj,
+            bj,
+            st,
+            met,
+            len,
+            o1,
+            f1,
+            o2,
+            f2,
+            o3,
+            f3,
+            o4,
+            f4,
+        ) = args
 
         self.index = int(index)
         self.i = int(i)
@@ -894,13 +1639,37 @@ class Branch(object):
         self.f3 = float(f3)
         self.o4 = int(o4)
         self.f4 = float(f4)
+        self.comment = str(comment)
 
     def __str__(self):
-        data = [self.index, self.i, self.j, self.ckt, self.r, self.x, self.b,
-                self.ratea, self.rateb, self.ratec, self.gi, self.bi, self.gj,
-                self.bj, self.st, self.met, self.len, self.o1, self.f1, self.o2,
-                self.f2, self.o3, self.f3, self.o4, self.f4]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.index,
+            self.i,
+            self.j,
+            self.ckt,
+            self.r,
+            self.x,
+            self.b,
+            self.ratea,
+            self.rateb,
+            self.ratec,
+            self.gi,
+            self.bi,
+            self.gj,
+            self.bj,
+            self.st,
+            self.met,
+            self.len,
+            self.o1,
+            self.f1,
+            self.o2,
+            self.f2,
+            self.o3,
+            self.f3,
+            self.o4,
+            self.f4,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -916,41 +1685,69 @@ class Branch(object):
         return met <= 1
 
     def is_breaker(self):
-        return '@' in self.ckt
+        return "@" in self.ckt
 
     def is_switch(self):
-        return '#' in self.ckt
+        return "#" in self.ckt
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
-        _check_boolean(self.st, 'st', 'branch', self.index)
+        """
+        _check_boolean(self.st, "st", "branch", self.index)
 
-        _check_range(self.i, 'bus i identifier', 'branch', self.index, 1, 999997)
-        _check_range(self.j, 'bus j identifier', 'branch', self.index, 1, 999997)
+        _check_range(self.i, "bus i identifier", "branch", self.index, 1, 999997)
+        _check_range(self.j, "bus j identifier", "branch", self.index, 1, 999997)
 
-        _check_owners(self, 'branch', self.index)
+        _check_owners(self, "branch", self.index)
 
-        if self.ckt[0] == '&':
-            warnings.warn('on branch {} the ckt values cannot start with "&"'
-                .format(self.index, self.i, self.j, self.st), PSSEDataWarning)
+        if self.ckt[0] == "&":
+            warnings.warn(
+                'on branch {} the ckt values cannot start with "&"'.format(
+                    self.index, self.i, self.j, self.st
+                ),
+                PSSEDataWarning,
+            )
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
-        data = [self.i, self.j, quote_string(self.ckt), self.r, self.x, self.b, self.ratea,
-                self.rateb, self.ratec, self.gi, self.bi, self.gj, self.bj,
-                self.st, self.met, self.len, self.o1, self.f1, self.o2, self.f2,
-                self.o3, self.f3, self.o4, self.f4]
+        data = [
+            self.i,
+            self.j,
+            quote_string(self.ckt),
+            self.r,
+            self.x,
+            self.b,
+            self.ratea,
+            self.rateb,
+            self.ratec,
+            self.gi,
+            self.bi,
+            self.gj,
+            self.bj,
+            self.st,
+            self.met,
+            self.len,
+            self.o1,
+            self.f1,
+            self.o2,
+            self.f2,
+            self.o3,
+            self.f3,
+            self.o4,
+            self.f4,
+        ]
 
-        return ', '.join([_psse_str(x) for x in data])
-
+        return ", ".join([_psse_str(x) for x in data])
 
 
 class TwoWindingTransformer(object):
-    def __init__(self, index, p1, p2, w1, w2):
-        '''This data structure contains two winding transformer parameters.
+
+    __slots__ = ("index", "p1", "p2", "w1", "w2", "comment")
+
+    def __init__(self, index, p1, p2, w1, w2, comment: str = ""):
+        """This data structure contains two winding transformer parameters.
 
         Args:
             index (int): unique transformer identifier
@@ -958,20 +1755,21 @@ class TwoWindingTransformer(object):
             p2 (TransformerParametersSecondLineShort): second line of parameters
             w1 (TransformerWinding): first winding data
             w2 (TransformerWindingShort): second winding data
-        '''
+        """
 
         self.index = index
         self.p1 = p1
         self.p2 = p2
         self.w1 = w1
         self.w2 = w2
+        self.comment = str(comment)
 
     def is_three_winding(self):
         return False
 
     def __str__(self):
         data = [self.index, self.p1, self.p2, self.w1, self.w2]
-        return ' '.join([str(x) for x in data])
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -984,24 +1782,26 @@ class TwoWindingTransformer(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         self.p1.validate(self.index)
         self.p2.validate(self.index)
         self.w1.validate(self.index)
         self.w2.validate(self.index)
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
         data = [self.p1, self.p2, self.w1, self.w2]
-        return '\n'.join([x.to_psse() for x in data])
-
+        return "\n".join([x.to_psse() for x in data])
 
 
 class ThreeWindingTransformer(object):
-    def __init__(self, index, p1, p2, w1, w2, w3):
-        '''This data structure contains three winding transformer parameters.
+
+    __slots__ = ("index", "p1", "p2", "w1", "w3", "comment")
+
+    def __init__(self, index, p1, p2, w1, w2, w3, comment: str = ""):
+        """This data structure contains three winding transformer parameters.
 
         Args:
             index (int): unique transformer identifier
@@ -1010,7 +1810,7 @@ class ThreeWindingTransformer(object):
             w1 (TransformerWinding): first winding data
             w2 (TransformerWinding): second winding data
             w3 (TransformerWinding): third winding data
-        '''
+        """
 
         self.index = index
         self.p1 = p1
@@ -1018,10 +1818,11 @@ class ThreeWindingTransformer(object):
         self.w1 = w1
         self.w2 = w2
         self.w3 = w3
+        self.comment = str(comment)
 
     def __str__(self):
         data = [self.index, self.p1, self.p2, self.w1, self.w2, self.w3]
-        return ' '.join([str(x) for x in data])
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -1037,9 +1838,9 @@ class ThreeWindingTransformer(object):
         return True
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         self.p1.validate(self.index)
         self.p2.validate(self.index)
         self.w1.validate(self.index)
@@ -1047,16 +1848,87 @@ class ThreeWindingTransformer(object):
         self.w3.validate(self.index)
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
         data = [self.p1, self.p2, self.w1, self.w2, self.w3]
-        return '\n'.join([x.to_psse() for x in data])
+        return "\n".join([x.to_psse() for x in data])
 
 
+TRANSFORMER_FL_DEFAULTS = [
+    0,
+    1,
+    1,
+    1,
+    1,
+    0.0,
+    0.0,
+    2,
+    "            ",
+    1,
+    1,
+    1.0,
+    0,
+    1.0,
+    0,
+    1.0,
+    0,
+    1.0,
+    "            ",
+]
 
-TRANSFORMER_FL_DEFAULTS = [0, 1, 1, 1, 1, 0.0, 0.0, 2, "            ", 1, 1, 1.0, 0, 1.0, 0, 1.0, 0, 1.0, "            "]
+
 class TransformerParametersFirstLine(object):
-    def __init__(self, i, j, k, ckt, cw, cz, cm, mag1, mag2, nmetr, name, stat, o1, f1, o2, f2, o3, f3, o4, f4, vecgrp="            "):
-        '''This data structure contains transformer parameters that are common to two and three winding transformers.
+
+    __slots__ = (
+        "i",
+        "j",
+        "k",
+        "ckt",
+        "cw",
+        "cz",
+        "cm",
+        "mag1",
+        "mag2",
+        "nmetr",
+        "name",
+        "stat",
+        "o1",
+        "f1",
+        "o2",
+        "f2",
+        "o3",
+        "f3",
+        "o4",
+        "f4",
+        "vecgrp",
+        "comment",
+    )
+
+    def __init__(
+        self,
+        i,
+        j,
+        k,
+        ckt,
+        cw,
+        cz,
+        cm,
+        mag1,
+        mag2,
+        nmetr,
+        name,
+        stat,
+        o1,
+        f1,
+        o2,
+        f2,
+        o3,
+        f3,
+        o4,
+        f4,
+        vecgrp="            ",
+        comment: str = "",
+    ):
+        """This data structure contains transformer parameters that are common to two and three winding transformers.
 
         Args:
             i (int): the identifier of the primary bus
@@ -1080,11 +1952,51 @@ class TransformerParametersFirstLine(object):
             o4 (int): owner four id, 1-9999 (default = the owner of the connecting bus)
             f4 (float): owner four fraction of total ownership (default = 1.0)
             vecgrp (string): vector group identifier (default = '            ')
-        '''
+        """
 
-        args = [k, ckt, cw, cz, cm, mag1, mag2, nmetr, name, stat, o1, f1, o2, f2, o3, f3, o4, f4, vecgrp]
+        args = [
+            k,
+            ckt,
+            cw,
+            cz,
+            cm,
+            mag1,
+            mag2,
+            nmetr,
+            name,
+            stat,
+            o1,
+            f1,
+            o2,
+            f2,
+            o3,
+            f3,
+            o4,
+            f4,
+            vecgrp,
+        ]
         _set_defaults(args, TRANSFORMER_FL_DEFAULTS)
-        k, ckt, cw, cz, cm, mag1, mag2, nmetr, name, stat, o1, f1, o2, f2, o3, f3, o4, f4, vecgrp = args
+        (
+            k,
+            ckt,
+            cw,
+            cz,
+            cm,
+            mag1,
+            mag2,
+            nmetr,
+            name,
+            stat,
+            o1,
+            f1,
+            o2,
+            f2,
+            o3,
+            f3,
+            o4,
+            f4,
+            vecgrp,
+        ) = args
 
         self.i = int(i)
         self.j = int(j)
@@ -1107,13 +2019,33 @@ class TransformerParametersFirstLine(object):
         self.o4 = int(o4)
         self.f4 = float(f4)
         self.vecgrp = unquote_string(vecgrp)
+        self.comment = str(comment)
 
     def __str__(self):
-        data = [self.i, self.j, self.k, self.ckt, self.cw, self.cz, self.cm,
-                self.mag1, self.mag2, self.nmetr, self.name, self.stat, self.o1,
-                self.f1, self.o2, self.f2, self.o3, self.f3, self.o4, self.f4,
-                self.vecgrp]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.i,
+            self.j,
+            self.k,
+            self.ckt,
+            self.cw,
+            self.cz,
+            self.cm,
+            self.mag1,
+            self.mag2,
+            self.nmetr,
+            self.name,
+            self.stat,
+            self.o1,
+            self.f1,
+            self.o2,
+            self.f2,
+            self.o3,
+            self.f3,
+            self.o4,
+            self.f4,
+            self.vecgrp,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -1126,38 +2058,93 @@ class TransformerParametersFirstLine(object):
         return NotImplemented
 
     def validate(self, transformer_id):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
-        _check_range(self.stat, 'stat', 'transformer', transformer_id, 0, 4)
+        """
+        _check_range(self.stat, "stat", "transformer", transformer_id, 0, 4)
 
-        _check_range(self.i, 'bus i identifier', 'transformer', transformer_id, 1, 999997)
-        _check_range(self.j, 'bus j identifier', 'transformer', transformer_id, 1, 999997)
-        _check_range(self.k, 'bus k identifier', 'transformer', transformer_id, 0, 999997)
+        _check_range(
+            self.i, "bus i identifier", "transformer", transformer_id, 1, 999997
+        )
+        _check_range(
+            self.j, "bus j identifier", "transformer", transformer_id, 1, 999997
+        )
+        _check_range(
+            self.k, "bus k identifier", "transformer", transformer_id, 0, 999997
+        )
 
-        _check_range(self.cw, 'cw', 'transformer', transformer_id, 1, 3)
-        _check_range(self.cz, 'cz', 'transformer', transformer_id, 1, 3)
-        _check_range(self.cm, 'cm', 'transformer', transformer_id, 1, 2)
+        _check_range(self.cw, "cw", "transformer", transformer_id, 1, 3)
+        _check_range(self.cz, "cz", "transformer", transformer_id, 1, 3)
+        _check_range(self.cm, "cm", "transformer", transformer_id, 1, 2)
 
-        _check_owners(self, 'transformer', transformer_id)
-
+        _check_owners(self, "transformer", transformer_id)
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
-        data = [self.i, self.j, self.k, quote_string(self.ckt), self.cw, self.cz, self.cm,
-                self.mag1, self.mag2, self.nmetr, quote_string(self.name), self.stat, self.o1,
-                self.f1, self.o2, self.f2, self.o3, self.f3, self.o4, self.f4,
-                quote_string(self.vecgrp)]
+        data = [
+            self.i,
+            self.j,
+            self.k,
+            quote_string(self.ckt),
+            self.cw,
+            self.cz,
+            self.cm,
+            self.mag1,
+            self.mag2,
+            self.nmetr,
+            quote_string(self.name),
+            self.stat,
+            self.o1,
+            self.f1,
+            self.o2,
+            self.f2,
+            self.o3,
+            self.f3,
+            self.o4,
+            self.f4,
+            quote_string(self.vecgrp),
+        ]
 
-        return ', '.join([_psse_str(x) for x in data])
-
+        return ", ".join([_psse_str(x) for x in data])
 
 
 TRANSFORMER_SL_DEFAULTS = [0.0, 100.0, 0.0, 100.0, 0.0, 100.0, 1.0, 0.0]
+
+
 class TransformerParametersSecondLine(object):
-    def __init__(self, r12, x12, sbase12, r23, x23, sbase23, r31, x31, sbase31, vmstar, anstar):
-        '''This data structure contains transformer parameters for the second line of three winding transformers.
+
+    __slots__ = (
+        "r12",
+        "x12",
+        "sbas12",
+        "r23",
+        "x23",
+        "sbase23",
+        "r31",
+        "x31",
+        "sbase31",
+        "vmstar",
+        "anstar",
+        "comment",
+    )
+
+    def __init__(
+        self,
+        r12,
+        x12,
+        sbase12,
+        r23,
+        x23,
+        sbase23,
+        r31,
+        x31,
+        sbase31,
+        vmstar,
+        anstar,
+        comment: str = "",
+    ):
+        """This data structure contains transformer parameters for the second line of three winding transformers.
 
         Args:
             r12 (float): resistance between terminal i and j (default 0.0)
@@ -1171,7 +2158,7 @@ class TransformerParametersSecondLine(object):
             sbase31 (float): the MVA base between terminal k and i
             vmstar (float): the voltage magnitude of the start point (default 1.0)
             anstar (float): the voltage angle of the start point (default 0.0)
-        '''
+        """
 
         args = [r12, sbase12, r23, sbase23, r31, sbase31, vmstar, anstar]
         _set_defaults(args, TRANSFORMER_SL_DEFAULTS)
@@ -1188,12 +2175,23 @@ class TransformerParametersSecondLine(object):
         self.sbase31 = float(sbase31)
         self.vmstar = float(vmstar)
         self.anstar = float(anstar)
+        self.comment = str(comment)
 
     def __str__(self):
-        data = [self.r12, self.x12, self.sbase12, self.r23, self.x23,
-                self.sbase23, self.r31, self.x31, self.sbase31, self.vmstar,
-                self.anstar]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.r12,
+            self.x12,
+            self.sbase12,
+            self.r23,
+            self.x23,
+            self.sbase23,
+            self.r31,
+            self.x31,
+            self.sbase31,
+            self.vmstar,
+            self.anstar,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -1206,32 +2204,46 @@ class TransformerParametersSecondLine(object):
         return NotImplemented
 
     def validate(self, transformer_id):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         pass
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
-        data = [self.r12, self.x12, self.sbase12, self.r23, self.x23,
-                self.sbase23, self.r31, self.x31, self.sbase31, self.vmstar,
-                self.anstar]
+        data = [
+            self.r12,
+            self.x12,
+            self.sbase12,
+            self.r23,
+            self.x23,
+            self.sbase23,
+            self.r31,
+            self.x31,
+            self.sbase31,
+            self.vmstar,
+            self.anstar,
+        ]
 
-        return ', '.join([_psse_str(x) for x in data])
-
+        return ", ".join([_psse_str(x) for x in data])
 
 
 TRANSFORMER_SLS_DEFAULTS = [0.0, 100.0]
+
+
 class TransformerParametersSecondLineShort(object):
-    def __init__(self, r12, x12, sbase12):
-        '''This data structure contains transformer parameters for the second line of two winding transformers.
+
+    __slots__ = ("r12", "x12", "sbase12", "comment")
+
+    def __init__(self, r12, x12, sbase12, comment: str = ""):
+        """This data structure contains transformer parameters for the second line of two winding transformers.
 
         Args:
             r12 (float): resistance between terminal i and j (default 0.0)
             x12 (float): reactance between terminal i and j
             sbase12 (float): the MVA base between terminal i and j
-        '''
+        """
 
         args = [r12, sbase12]
         _set_defaults(args, TRANSFORMER_SLS_DEFAULTS)
@@ -1240,10 +2252,11 @@ class TransformerParametersSecondLineShort(object):
         self.r12 = float(r12)
         self.x12 = float(x12)
         self.sbase12 = float(sbase12)
+        self.comment = str(comment)
 
     def __str__(self):
         data = [self.r12, self.x12, self.sbase12]
-        return ' '.join([str(x) for x in data])
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -1256,23 +2269,87 @@ class TransformerParametersSecondLineShort(object):
         return NotImplemented
 
     def validate(self, transformer_id):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         pass
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
         data = [self.r12, self.x12, self.sbase12]
 
-        return ', '.join([_psse_str(x) for x in data])
+        return ", ".join([_psse_str(x) for x in data])
 
 
-TRANSFORMER_WINDING_DEFAULTS = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 1.1, 0.9, 1.1, 0.9, 33, 0, 0.0, 0.0, 0.0]
+TRANSFORMER_WINDING_DEFAULTS = [
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0,
+    0,
+    1.1,
+    0.9,
+    1.1,
+    0.9,
+    33,
+    0,
+    0.0,
+    0.0,
+    0.0,
+]
+
+
 class TransformerWinding(object):
-    def __init__(self, index, windv, nomv, ang, rata, ratb, ratc, cod, cont, rma, rmi, vma, vmi, ntp, tab, cr, cx, cnxa=0.0):
-        '''This data structure contains transformer winding parameters.
+
+    __slots__ = (
+        "index",
+        "windv",
+        "nomv",
+        "ang",
+        "rata",
+        "ratb",
+        "ratc",
+        "cod",
+        "cont",
+        "rma",
+        "rmi",
+        "vma",
+        "vmi",
+        "ntp",
+        "tab",
+        "cr",
+        "cx",
+        "cnxa",
+        "comment",
+    )
+
+    def __init__(
+        self,
+        index,
+        windv,
+        nomv,
+        ang,
+        rata,
+        ratb,
+        ratc,
+        cod,
+        cont,
+        rma,
+        rmi,
+        vma,
+        vmi,
+        ntp,
+        tab,
+        cr,
+        cx,
+        cnxa=0.0,
+        comment: str = "",
+    ):
+        """This data structure contains transformer winding parameters.
 
         Args:
             index (int): transformer winding identifier (1,2,3)
@@ -1293,11 +2370,47 @@ class TransformerWinding(object):
             cr (float): load drop compensation resistance (p.u.)
             cx (float): load drop compensation reactance (p.u.)
             cnxa (float): winding connection angle (degrees) (default = 0.0)
-        '''
+        """
 
-        args = [windv, nomv, ang, rata, ratb, ratc, cod, cont, rma, rmi, vma, vmi, ntp, tab, cr, cx, cnxa]
+        args = [
+            windv,
+            nomv,
+            ang,
+            rata,
+            ratb,
+            ratc,
+            cod,
+            cont,
+            rma,
+            rmi,
+            vma,
+            vmi,
+            ntp,
+            tab,
+            cr,
+            cx,
+            cnxa,
+        ]
         _set_defaults(args, TRANSFORMER_WINDING_DEFAULTS)
-        windv, nomv, ang, rata, ratb, ratc, cod, cont, rma, rmi, vma, vmi, ntp, tab, cr, cx, cnxa = args
+        (
+            windv,
+            nomv,
+            ang,
+            rata,
+            ratb,
+            ratc,
+            cod,
+            cont,
+            rma,
+            rmi,
+            vma,
+            vmi,
+            ntp,
+            tab,
+            cr,
+            cx,
+            cnxa,
+        ) = args
 
         self.index = int(index)
         self.windv = float(windv)
@@ -1317,12 +2430,30 @@ class TransformerWinding(object):
         self.cr = float(cr)
         self.cx = float(cx)
         self.cnxa = float(cnxa)
+        self.comment = str(comment)
 
     def __str__(self):
-        data = [self.index, self.windv, self.nomv, self.ang, self.rata, self.ratb,
-                self.ratc, self.cod, self.cont, self.rma, self.rmi, self.vma,
-                self.vmi, self.ntp, self.tab, self.cr, self.cx, self.cnxa]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.index,
+            self.windv,
+            self.nomv,
+            self.ang,
+            self.rata,
+            self.ratb,
+            self.ratc,
+            self.cod,
+            self.cont,
+            self.rma,
+            self.rmi,
+            self.vma,
+            self.vmi,
+            self.ntp,
+            self.tab,
+            self.cr,
+            self.cx,
+            self.cnxa,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -1335,38 +2466,65 @@ class TransformerWinding(object):
         return NotImplemented
 
     def validate(self, transformer_id):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
-        winding_id = '{} winding {}'.format(transformer_id, self.index)
-        _check_range(self.index, 'winding index', 'transformer', self.transformer_id, 1, 3)
-        _check_range(self.ang, 'angle shift', 'transformer', winding_id, -180.0, 180.0)
-        _check_range(self.cod, 'control mode', 'transformer', winding_id, -5, 5)
-        _check_range(self.cont, 'bus identifier', 'transformer', winding_id, 1, 999997)
-        _check_range(self.ntp, 'tap positions', 'transformer', winding_id, 2, 9999)
-        _check_range(self.tab, 'impedance correction table', 'transformer', winding_id, 1, float('Inf'))
+        """
+        winding_id = "{} winding {}".format(transformer_id, self.index)
+        _check_range(
+            self.index, "winding index", "transformer", self.transformer_id, 1, 3
+        )
+        _check_range(self.ang, "angle shift", "transformer", winding_id, -180.0, 180.0)
+        _check_range(self.cod, "control mode", "transformer", winding_id, -5, 5)
+        _check_range(self.cont, "bus identifier", "transformer", winding_id, 1, 999997)
+        _check_range(self.ntp, "tap positions", "transformer", winding_id, 2, 9999)
+        _check_range(
+            self.tab,
+            "impedance correction table",
+            "transformer",
+            winding_id,
+            1,
+            float("Inf"),
+        )
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
-        data = [self.windv, self.nomv, self.ang, self.rata, self.ratb,
-                self.ratc, self.cod, self.cont, self.rma, self.rmi, self.vma,
-                self.vmi, self.ntp, self.tab, self.cr, self.cx, self.cnxa]
+        data = [
+            self.windv,
+            self.nomv,
+            self.ang,
+            self.rata,
+            self.ratb,
+            self.ratc,
+            self.cod,
+            self.cont,
+            self.rma,
+            self.rmi,
+            self.vma,
+            self.vmi,
+            self.ntp,
+            self.tab,
+            self.cr,
+            self.cx,
+            self.cnxa,
+        ]
 
-        return ', '.join([_psse_str(x) for x in data])
+        return ", ".join([_psse_str(x) for x in data])
 
 
 TRANSFORMER_WINDING_SHORT_DEFAULTS = [1.0, 0.0]
+
+
 class TransformerWindingShort(object):
     def __init__(self, index, windv, nomv):
-        '''This data structure contains the shortend transformer winding
+        """This data structure contains the shortend transformer winding
         parameters for the secondary side of a two winding transformer
 
         Args:
             index (int): transformer winding identifier (1,2,3)
             windv (float): off-nominal turn ratio (p.u.) (default = 1.0)
             nomv (float): base voltage (kilo volts)
-        '''
+        """
 
         args = [windv, nomv]
         _set_defaults(args, TRANSFORMER_WINDING_SHORT_DEFAULTS)
@@ -1378,7 +2536,7 @@ class TransformerWindingShort(object):
 
     def __str__(self):
         data = [self.index, self.windv, self.nomv]
-        return ' '.join([str(x) for x in data])
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -1391,25 +2549,28 @@ class TransformerWindingShort(object):
         return NotImplemented
 
     def validate(self, transformer_id):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
-        winding_id = '{} winding {}'.format(transformer_id, self.index)
-        _check_range(self.index, 'winding index', 'transformer', self.transformer_id, 1, 3)
+        """
+        winding_id = "{} winding {}".format(transformer_id, self.index)
+        _check_range(
+            self.index, "winding index", "transformer", self.transformer_id, 1, 3
+        )
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
         data = [self.windv, self.nomv]
 
-        return ', '.join([_psse_str(x) for x in data])
-
+        return ", ".join([_psse_str(x) for x in data])
 
 
 AREA_DEFAULTS = [0, 0.0, 10.0, "            "]
+
+
 class Area(object):
-    def __init__(self, i, isw="0", pdes="0.0", ptol="0.0", arnam=''):
-        '''This data structure contains area interchange parameters.
+    def __init__(self, i, isw="0", pdes="0.0", ptol="0.0", arnam=""):
+        """This data structure contains area interchange parameters.
 
         Args:
             i (int): the identifier of the area
@@ -1417,7 +2578,7 @@ class Area(object):
             pdes (float): desired net area interchange (MW)
             ptol (float): interchange tolerance (MW += out)
             arnam (string): area name, 8 characters, must be enclosed in single quotes
-        '''
+        """
 
         args = [isw, pdes, ptol, arnam]
         _set_defaults(args, AREA_DEFAULTS)
@@ -1429,10 +2590,9 @@ class Area(object):
         self.ptol = float(ptol)
         self.arnam = unquote_string(arnam)
 
-
     def __str__(self):
         data = [self.i, self.isw, self.pdes, self.ptol, self.arnam]
-        return ' '.join([str(x) for x in data])
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -1445,28 +2605,30 @@ class Area(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
-        _check_range(self.i, 'id', 'area', self.i, 1, 9999)
+        """
+        _check_range(self.i, "id", "area", self.i, 1, 9999)
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
         data = [self.i, self.isw, self.pdes, self.ptol, quote_string(self.arnam)]
 
-        return ', '.join([_psse_str(x) for x in data])
+        return ", ".join([_psse_str(x) for x in data])
 
 
 ZONE_DEFAULTS = ["            "]
+
+
 class Zone(object):
     def __init__(self, i, zoname):
-        '''This data structure contains zone parameters.
+        """This data structure contains zone parameters.
 
         Args:
             i (int): the identifier of the zone
             zoname (string): zone name
-        '''
+        """
 
         args = [zoname]
         _set_defaults(args, ZONE_DEFAULTS)
@@ -1475,10 +2637,9 @@ class Zone(object):
         self.i = int(i)
         self.zoname = unquote_string(zoname)
 
-
     def __str__(self):
         data = [self.i, self.zoname]
-        return ' '.join([str(x) for x in data])
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -1491,29 +2652,30 @@ class Zone(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
-        _check_range(self.i, 'id', 'zone', self.i, 1, 9999)
-
+        """
+        _check_range(self.i, "id", "zone", self.i, 1, 9999)
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
         data = [self.i, quote_string(self.zoname)]
 
-        return ', '.join([_psse_str(x) for x in data])
+        return ", ".join([_psse_str(x) for x in data])
 
 
 OWNER_DEFAULTS = ["            "]
+
+
 class Owner(object):
     def __init__(self, i, owname):
-        '''This data structure contains owner parameters.
+        """This data structure contains owner parameters.
 
         Args:
             i (int): the identifier of the owner
             owname (string): owner name
-        '''
+        """
 
         args = [owname]
         _set_defaults(args, OWNER_DEFAULTS)
@@ -1524,7 +2686,7 @@ class Owner(object):
 
     def __str__(self):
         data = [self.i, self.owname]
-        return ' '.join([str(x) for x in data])
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -1537,23 +2699,69 @@ class Owner(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
-        _check_range(self.i, 'id', 'owner', self.i, 1, 9999)
+        """
+        _check_range(self.i, "id", "owner", self.i, 1, 9999)
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
         data = [self.i, quote_string(self.owname)]
 
-        return ', '.join([_psse_str(x) for x in data])
+        return ", ".join([_psse_str(x) for x in data])
 
 
-FACTS_DEFAULTS = [0, 1, 0.0, 0.0, 1.0, 9999.0, 9999.0, 0.9, 1.1, 1.0, 0.0, 0.05, 100.0, 1, 0.0, 0.0, 0, 0, ""]
+FACTS_DEFAULTS = [
+    0,
+    1,
+    0.0,
+    0.0,
+    1.0,
+    9999.0,
+    9999.0,
+    0.9,
+    1.1,
+    1.0,
+    0.0,
+    0.05,
+    100.0,
+    1,
+    0.0,
+    0.0,
+    0,
+    0,
+    "",
+]
+
+
 class FACTSDevice(object):
-    def __init__(self, index, name, i, j, mode, pdes, qdes, vset, shmx, trmx, vtmn, vtmx, vsmx, imx, linx, rmpct, owner, set1, set2, vsref, remot="0", mname=''):
-        '''This data structure contains FACTS device parameters.
+    def __init__(
+        self,
+        index,
+        name,
+        i,
+        j,
+        mode,
+        pdes,
+        qdes,
+        vset,
+        shmx,
+        trmx,
+        vtmn,
+        vtmx,
+        vsmx,
+        imx,
+        linx,
+        rmpct,
+        owner,
+        set1,
+        set2,
+        vsref,
+        remot="0",
+        mname="",
+    ):
+        """This data structure contains FACTS device parameters.
 
         Args:
             index (int) : unique FACTS device identifier
@@ -1578,11 +2786,51 @@ class FACTSDevice(object):
             vsref (int) : series voltage reference code
             remot (int) : bus number of bus regulated by shunt element
             mname (str) : name of the IPFC master FACTS Device
-        '''
+        """
 
-        args = [j, mode, pdes, qdes, vset, shmx, trmx, vtmn, vtmx, vsmx, imx, linx, rmpct, owner, set1, set2, vsref, remot, mname]
+        args = [
+            j,
+            mode,
+            pdes,
+            qdes,
+            vset,
+            shmx,
+            trmx,
+            vtmn,
+            vtmx,
+            vsmx,
+            imx,
+            linx,
+            rmpct,
+            owner,
+            set1,
+            set2,
+            vsref,
+            remot,
+            mname,
+        ]
         _set_defaults(args, FACTS_DEFAULTS)
-        j, mode, pdes, qdes, vset, shmx, trmx, vtmn, vtmx, vsmx, imx, linx, rmpct, owner, set1, set2, vsref, remot, mname = args
+        (
+            j,
+            mode,
+            pdes,
+            qdes,
+            vset,
+            shmx,
+            trmx,
+            vtmn,
+            vtmx,
+            vsmx,
+            imx,
+            linx,
+            rmpct,
+            owner,
+            set1,
+            set2,
+            vsref,
+            remot,
+            mname,
+        ) = args
 
         self.index = index
         self.name = unquote_string(name)
@@ -1608,11 +2856,30 @@ class FACTSDevice(object):
         self.mname = unquote_string(mname)
 
     def __str__(self):
-        data = [self.name, self.im, self.j, self.mode, self.pdes, self.qdes,
-                self.vset, self.shmx, self.trmx, self.vtmn, self.vtmx, self.vsmx,
-                self.imx, self.linx, self.rmpct, self.owner, self.set1, self.set2,
-                self.vsref, self.remot, self.mname]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.name,
+            self.im,
+            self.j,
+            self.mode,
+            self.pdes,
+            self.qdes,
+            self.vset,
+            self.shmx,
+            self.trmx,
+            self.vtmn,
+            self.vtmx,
+            self.vsmx,
+            self.imx,
+            self.linx,
+            self.rmpct,
+            self.owner,
+            self.set1,
+            self.set2,
+            self.vsref,
+            self.remot,
+            self.mname,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -1625,32 +2892,51 @@ class FACTSDevice(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
-        _check_range(self.owner, 'owner', 'bus', self.i, 1, 9999)
+        """
+        _check_range(self.owner, "owner", "bus", self.i, 1, 9999)
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
-        data = [quote_string(self.name), self.i, self.j, self.mode, self.pdes, self.qdes,
-                self.vset, self.shmx, self.trmx, self.vtmn, self.vtmx, self.vsmx,
-                self.imx, self.linx, self.rmpct, self.owner, self.set1, self.set2,
-                self.vsref, self.remot, quote_string(self.mname)]
+        data = [
+            quote_string(self.name),
+            self.i,
+            self.j,
+            self.mode,
+            self.pdes,
+            self.qdes,
+            self.vset,
+            self.shmx,
+            self.trmx,
+            self.vtmn,
+            self.vtmx,
+            self.vsmx,
+            self.imx,
+            self.linx,
+            self.rmpct,
+            self.owner,
+            self.set1,
+            self.set2,
+            self.vsref,
+            self.remot,
+            quote_string(self.mname),
+        ]
 
-        return ', '.join([_psse_str(x) for x in data])
+        return ", ".join([_psse_str(x) for x in data])
 
 
 class VSCDCLine(object):
     def __init__(self, index, params, c1, c2):
-        '''This data structure contains VSC DC Line parameters.
+        """This data structure contains VSC DC Line parameters.
 
         Args:
             index (int) : unique vsc dc line identifier
             params (VSCDCLineParameters) : first line of VSC DC line data entry
             c1 (VSCDCLineConverter) : second line of VSC DC Line data entry (converter 1)
             c2 (VSCDCLineConverter) : third line of VSC DC Line data entry (converter 2)
-        '''
+        """
         self.index = index
         self.params = params
         self.c1 = c1
@@ -1658,7 +2944,7 @@ class VSCDCLine(object):
 
     def __str__(self):
         data = [self.params, self.c1, self.c2]
-        return ' '.join([str(x) for x in data])
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -1671,22 +2957,36 @@ class VSCDCLine(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         return NotImplemented
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
         data = [self.params, self.c1, self.c2]
-        return '\n'.join([x.to_psse() for x in data])
-
+        return "\n".join([x.to_psse() for x in data])
 
 
 VSC_DCL_DEFAULTS = [1, 1, 1.0, 0, 1.0, 0, 1.0, 0, 1.0]
+
+
 class VSCDCLineParameters(object):
-    def __init__(self, name, mdc, rdc, o1="0", f1="1", o2="0", f2="1", o3="0", f3="1", o4="0", f4="1"):
-        '''This data structure contains VSC DC line first-line parameters
+    def __init__(
+        self,
+        name,
+        mdc,
+        rdc,
+        o1="0",
+        f1="1",
+        o2="0",
+        f2="1",
+        o3="0",
+        f3="1",
+        o4="0",
+        f4="1",
+    ):
+        """This data structure contains VSC DC line first-line parameters
 
         Args:
             name (str) : name of VSC DC Line
@@ -1694,7 +2994,7 @@ class VSCDCLineParameters(object):
             rdc (float) : dc line resistance
             oi (int) : owner number
             fi (float) : fraction of total ownership assigned to oi
-        '''
+        """
 
         args = [mdc, o1, f1, o2, f2, o3, f3, o4, f4]
         _set_defaults(args, VSC_DCL_DEFAULTS)
@@ -1713,9 +3013,20 @@ class VSCDCLineParameters(object):
         self.f4 = float(f4)
 
     def __str__(self):
-        data = [self.name, self.mdc, self.rdc, self.o1, self.f1,
-                self.o2, self.f2, self.o3, self.f3, self.o4, self.f4]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.name,
+            self.mdc,
+            self.rdc,
+            self.o1,
+            self.f1,
+            self.o2,
+            self.f2,
+            self.o3,
+            self.f3,
+            self.o4,
+            self.f4,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -1728,23 +3039,52 @@ class VSCDCLineParameters(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         pass
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
-        data = [quote_string(self.name), self.mdc, self.rdc, self.o1, self.f1,
-                self.o2, self.f2, self.o3, self.f3, self.o4, self.f4]
-        return ', '.join([_psse_str(x) for x in data])
-
+        """Returns: a pss/e encoding of this data structure as a string"""
+        data = [
+            quote_string(self.name),
+            self.mdc,
+            self.rdc,
+            self.o1,
+            self.f1,
+            self.o2,
+            self.f2,
+            self.o3,
+            self.f3,
+            self.o4,
+            self.f4,
+        ]
+        return ", ".join([_psse_str(x) for x in data])
 
 
 VSC_DCC_DEFAULTS = [1, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 9999.0, -9999.0, 0, 100.0]
+
+
 class VSCDCLineConverter(object):
-    def __init__(self, ibus, type, mode, dcset, acset, aloss, bloss, minloss, smax, imax, pwf, maxq, minq, remot="0", rmpct="100.0"):
-        '''This data structure contains VSC DC Line Converter parameters
+    def __init__(
+        self,
+        ibus,
+        type,
+        mode,
+        dcset,
+        acset,
+        aloss,
+        bloss,
+        minloss,
+        smax,
+        imax,
+        pwf,
+        maxq,
+        minq,
+        remot="0",
+        rmpct="100.0",
+    ):
+        """This data structure contains VSC DC Line Converter parameters
 
         Args:
             ibus (int) : bus number
@@ -1762,11 +3102,37 @@ class VSCDCLineConverter(object):
             minq (float) : reactive power lower limit
             remot (int) : bus number of remote regulating bus
             rmpct (float) : percent of Mvar required to hold bus voltage
-        '''
+        """
 
-        args = [mode, acset, aloss, bloss, minloss, smax, imax, pwf, maxq, minq, remot, rmpct]
+        args = [
+            mode,
+            acset,
+            aloss,
+            bloss,
+            minloss,
+            smax,
+            imax,
+            pwf,
+            maxq,
+            minq,
+            remot,
+            rmpct,
+        ]
         _set_defaults(args, VSC_DCC_DEFAULTS)
-        mode, acset, aloss, bloss, minloss, smax, imax, pwf, maxq, minq, remot, rmpct = args
+        (
+            mode,
+            acset,
+            aloss,
+            bloss,
+            minloss,
+            smax,
+            imax,
+            pwf,
+            maxq,
+            minq,
+            remot,
+            rmpct,
+        ) = args
 
         self.ibus = int(ibus)
         self.type = int(type)
@@ -1785,10 +3151,24 @@ class VSCDCLineConverter(object):
         self.rmpct = float(rmpct)
 
     def __str__(self):
-        data = [self.ibus, self.type, self.mode, self.dcset, self.acset, self.aloss,
-                self.bloss, self.minloss, self.smax, self.imax, self.pwf, self.maxq,
-                self.minq, self.remot, self.rmpct]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.ibus,
+            self.type,
+            self.mode,
+            self.dcset,
+            self.acset,
+            self.aloss,
+            self.bloss,
+            self.minloss,
+            self.smax,
+            self.imax,
+            self.pwf,
+            self.maxq,
+            self.minq,
+            self.remot,
+            self.rmpct,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -1801,30 +3181,43 @@ class VSCDCLineConverter(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         pass
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
-        data = [self.ibus, self.type, self.mode, self.dcset, self.acset, self.aloss,
-                self.bloss, self.minloss, self.smax, self.imax, self.pwf, self.maxq,
-                self.minq, self.remot, self.rmpct]
-        return ', '.join([_psse_str(x) for x in data])
-
+        """Returns: a pss/e encoding of this data structure as a string"""
+        data = [
+            self.ibus,
+            self.type,
+            self.mode,
+            self.dcset,
+            self.acset,
+            self.aloss,
+            self.bloss,
+            self.minloss,
+            self.smax,
+            self.imax,
+            self.pwf,
+            self.maxq,
+            self.minq,
+            self.remot,
+            self.rmpct,
+        ]
+        return ", ".join([_psse_str(x) for x in data])
 
 
 class TwoTerminalDCLine(object):
     def __init__(self, index, params, rectifier, inverter):
-        '''This data structure contains Two-Terminal DC Line parameters.
+        """This data structure contains Two-Terminal DC Line parameters.
 
         Args:
             index (int) : unique two-terminal dc line identifier
             params (TwoTerminalDCLineParameters) : first line of two-terminal dc line data entry
             rectifier (TwoTerminalDCLineRectifier) : second line of two-terminal dc line data entry
             inverter (TwoTerminalDCLineInverter) : third line of two-terminal dc line data entry
-        '''
+        """
         self.index = index
         self.params = params
         self.rectifier = rectifier
@@ -1832,7 +3225,7 @@ class TwoTerminalDCLine(object):
 
     def __str__(self):
         data = [self.params, self.rectifier, self.inverter]
-        return ' '.join([str(x) for x in data])
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -1845,21 +3238,37 @@ class TwoTerminalDCLine(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         return NotImplemented
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
         data = [self.params, self.rectifier, self.inverter]
-        return '\n'.join([x.to_psse() for x in data])
+        return "\n".join([x.to_psse() for x in data])
 
 
 TTDCL_PARAMETER_DEFAULTS = [0, 0.0, 0.0, 0.0, "I", 0.0, 20, 1.0]
+
+
 class TwoTerminalDCLineParameters(object):
-    def __init__(self, name, mdc, rdc, setvl, vschd, vcmod, rcomp, delti, meter, dcvmin, cccitmx, cccacc):
-        '''This data structure contains Two-Terminal DC Line parameters for the first line of the data entry
+    def __init__(
+        self,
+        name,
+        mdc,
+        rdc,
+        setvl,
+        vschd,
+        vcmod,
+        rcomp,
+        delti,
+        meter,
+        dcvmin,
+        cccitmx,
+        cccacc,
+    ):
+        """This data structure contains Two-Terminal DC Line parameters for the first line of the data entry
 
         Args:
             name (str) : name of the dc line
@@ -1874,7 +3283,7 @@ class TwoTerminalDCLineParameters(object):
             dcvmin (float) : minimum compounded dc voltage
             cccitmx (int) : iteration limit for solution proceedure
             cccacc (float) : acceleration factor for solution proceedure
-        '''
+        """
 
         args = [mdc, vcmod, rcomp, delti, meter, dcvmin, cccitmx, cccacc]
         _set_defaults(args, TTDCL_PARAMETER_DEFAULTS)
@@ -1894,10 +3303,21 @@ class TwoTerminalDCLineParameters(object):
         self.cccacc = float(cccacc)
 
     def __str__(self):
-        data = [self.name, self.mdc, self.rdc, self.setvl, self.vschd, self.vcmod,
-                self.rcomp, self.delti, self.meter, self.dcvmin, self.cccitmx,
-                self.cccacc]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.name,
+            self.mdc,
+            self.rdc,
+            self.setvl,
+            self.vschd,
+            self.vcmod,
+            self.rcomp,
+            self.delti,
+            self.meter,
+            self.dcvmin,
+            self.cccitmx,
+            self.cccacc,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -1910,25 +3330,57 @@ class TwoTerminalDCLineParameters(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         return NotImplemented
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
-        data = [quote_string(self.name), self.mdc, self.rdc, self.setvl, self.vschd,
-                self.vcmod, self.rcomp, self.delti, self.meter, self.dcvmin, self.cccitmx,
-                self.cccacc]
+        data = [
+            quote_string(self.name),
+            self.mdc,
+            self.rdc,
+            self.setvl,
+            self.vschd,
+            self.vcmod,
+            self.rcomp,
+            self.delti,
+            self.meter,
+            self.dcvmin,
+            self.cccitmx,
+            self.cccacc,
+        ]
 
-        return ', '.join([_psse_str(x) for x in data])
+        return ", ".join([_psse_str(x) for x in data])
 
 
 TTDCL_RECTIFIER_DEFAULTS = [1.0, 1.0, 1.5, 0.51, 0.00625, 0, 0, 0, "1", 0.0]
+
+
 class TwoTerminalDCLineRectifier(object):
-    def __init__(self, ipr, nbr, anmxr, anmnr, rcr, xcr, ebasr, trr, tapr, tmxr, tmnr, stpr, icr, ifr, itr, idr, xcapr):
-        '''This data structure contains Two-Terminal DC Line parameters for the Rectifier (second line)
+    def __init__(
+        self,
+        ipr,
+        nbr,
+        anmxr,
+        anmnr,
+        rcr,
+        xcr,
+        ebasr,
+        trr,
+        tapr,
+        tmxr,
+        tmnr,
+        stpr,
+        icr,
+        ifr,
+        itr,
+        idr,
+        xcapr,
+    ):
+        """This data structure contains Two-Terminal DC Line parameters for the Rectifier (second line)
 
         Args:
             ipr (int) : bus number
@@ -1948,7 +3400,7 @@ class TwoTerminalDCLineRectifier(object):
             itr (int) : winding 2 side to bus number
             idr (str) : circuit identifier
             xcapr (float) : capacitor resistance per bridge
-        '''
+        """
 
         args = [trr, tapr, tmxr, tmnr, stpr, icr, ifr, itr, idr, xcapr]
         _set_defaults(args, TTDCL_RECTIFIER_DEFAULTS)
@@ -1973,11 +3425,26 @@ class TwoTerminalDCLineRectifier(object):
         self.xcapr = float(xcapr)
 
     def __str__(self):
-        data = [self.ipr, self.nbr, self.anmxr, self.anmnr, self.rcr,
-                self.xcr, self.ebasr, self.trr, self.tapr, self.tmxr,
-                self.tmnr, self.stpr, self.icr, self.ifr, self.itr,
-                self.idr, self.xcapr]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.ipr,
+            self.nbr,
+            self.anmxr,
+            self.anmnr,
+            self.rcr,
+            self.xcr,
+            self.ebasr,
+            self.trr,
+            self.tapr,
+            self.tmxr,
+            self.tmnr,
+            self.stpr,
+            self.icr,
+            self.ifr,
+            self.itr,
+            self.idr,
+            self.xcapr,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -1990,27 +3457,62 @@ class TwoTerminalDCLineRectifier(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         return NotImplemented
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
-        data = [self.ipr, self.nbr, self.anmxr, self.anmnr, self.rcr,
-                self.xcr, self.ebasr, self.trr, self.tapr, self.tmxr,
-                self.tmnr, self.stpr, self.icr, self.ifr, self.itr,
-                quote_string(self.idr), self.xcapr]
+        data = [
+            self.ipr,
+            self.nbr,
+            self.anmxr,
+            self.anmnr,
+            self.rcr,
+            self.xcr,
+            self.ebasr,
+            self.trr,
+            self.tapr,
+            self.tmxr,
+            self.tmnr,
+            self.stpr,
+            self.icr,
+            self.ifr,
+            self.itr,
+            quote_string(self.idr),
+            self.xcapr,
+        ]
 
-        return ', '.join([_psse_str(x) for x in data])
-
+        return ", ".join([_psse_str(x) for x in data])
 
 
 TTDCL_INVERTER_DEFAULTS = [1.0, 1.0, 1.5, 0.51, 0.00625, 0, 0, 0, "1", 0.0]
+
+
 class TwoTerminalDCLineInverter(object):
-    def __init__(self, ipi, nbi, anmxi, anmni, rci, xci, ebasi, tri, tapi, tmxi, tmni, stpi, ici, ifi, iti, idi, xcapi):
-        '''This data structure contains Two-Terminal DC Line parameters for the Inverter (third line)
+    def __init__(
+        self,
+        ipi,
+        nbi,
+        anmxi,
+        anmni,
+        rci,
+        xci,
+        ebasi,
+        tri,
+        tapi,
+        tmxi,
+        tmni,
+        stpi,
+        ici,
+        ifi,
+        iti,
+        idi,
+        xcapi,
+    ):
+        """This data structure contains Two-Terminal DC Line parameters for the Inverter (third line)
 
         Args:
             ipi (int) : bus number
@@ -2030,7 +3532,7 @@ class TwoTerminalDCLineInverter(object):
             iti (int) : winding 2 side to bus number
             idi (str) : circuit identifier
             xcapi (float) : capacitor resistance per bridge
-        '''
+        """
 
         args = [tri, tapi, tmxi, tmni, stpi, ici, ifi, iti, idi, xcapi]
         _set_defaults(args, TTDCL_INVERTER_DEFAULTS)
@@ -2055,11 +3557,26 @@ class TwoTerminalDCLineInverter(object):
         self.xcapi = float(xcapi)
 
     def __str__(self):
-        data = [self.ipi, self.nbi, self.anmxi, self.anmni, self.rci,
-                self.xci, self.ebasi, self.tri, self.tapi, self.tmxi,
-                self.tmni, self.stpi, self.ici, self.ifi, self.iti,
-                self.idi, self.xcapi]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.ipi,
+            self.nbi,
+            self.anmxi,
+            self.anmni,
+            self.rci,
+            self.xci,
+            self.ebasi,
+            self.tri,
+            self.tapi,
+            self.tmxi,
+            self.tmni,
+            self.stpi,
+            self.ici,
+            self.ifi,
+            self.iti,
+            self.idi,
+            self.xcapi,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -2072,37 +3589,149 @@ class TwoTerminalDCLineInverter(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         return NotImplemented
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
-        data = [self.ipi, self.nbi, self.anmxi, self.anmni, self.rci,
-                self.xci, self.ebasi, self.tri, self.tapi, self.tmxi,
-                self.tmni, self.stpi, self.ici, self.ifi, self.iti,
-                quote_string(self.idi), self.xcapi]
+        data = [
+            self.ipi,
+            self.nbi,
+            self.anmxi,
+            self.anmni,
+            self.rci,
+            self.xci,
+            self.ebasi,
+            self.tri,
+            self.tapi,
+            self.tmxi,
+            self.tmni,
+            self.stpi,
+            self.ici,
+            self.ifi,
+            self.iti,
+            quote_string(self.idi),
+            self.xcapi,
+        ]
 
-        return ', '.join([_psse_str(x) for x in data])
+        return ", ".join([_psse_str(x) for x in data])
 
 
-IMPEDANCE_CORRECTION_DEFAULTS = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+IMPEDANCE_CORRECTION_DEFAULTS = [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+]
+
+
 class TransformerImpedanceCorrection(object):
-    def __init__(self, index, i, t1="0.0", f1="0.0", t2="0.0", f2="0.0", t3="0.0", f3="0.0", t4="0.0", f4="0.0", t5="0.0", f5="0.0", t6="0.0", f6="0.0", t7="0.0", f7="0.0", t8="0.0", f8="0.0", t9="0.0", f9="0.0", t10="0.0", f10="0.0", t11="0.0", f11="0.0"):
-        '''This data structure contains Transformer Impedence Correction Table parameters
+    def __init__(
+        self,
+        index,
+        i,
+        t1="0.0",
+        f1="0.0",
+        t2="0.0",
+        f2="0.0",
+        t3="0.0",
+        f3="0.0",
+        t4="0.0",
+        f4="0.0",
+        t5="0.0",
+        f5="0.0",
+        t6="0.0",
+        f6="0.0",
+        t7="0.0",
+        f7="0.0",
+        t8="0.0",
+        f8="0.0",
+        t9="0.0",
+        f9="0.0",
+        t10="0.0",
+        f10="0.0",
+        t11="0.0",
+        f11="0.0",
+    ):
+        """This data structure contains Transformer Impedence Correction Table parameters
 
         Args:
             index (int) : unique transformer impedence correction identifier
             i (int) : transformer impedence correction table number
             ti (float) : off-nominal turns ratio or phase shift angle
             fi (float) : scaling factor
-        '''
+        """
 
-        args = [t1, f1, t2, f2, t3, f3, t4, f4, t5, f5, t6, f6, t7, f7, t8, f8, t9, f9, t10, f10, t11, f11]
+        args = [
+            t1,
+            f1,
+            t2,
+            f2,
+            t3,
+            f3,
+            t4,
+            f4,
+            t5,
+            f5,
+            t6,
+            f6,
+            t7,
+            f7,
+            t8,
+            f8,
+            t9,
+            f9,
+            t10,
+            f10,
+            t11,
+            f11,
+        ]
         _set_defaults(args, IMPEDANCE_CORRECTION_DEFAULTS)
-        t1, f1, t2, f2, t3, f3, t4, f4, t5, f5, t6, f6, t7, f7, t8, f8, t9, f9, t10, f10, t11, f11 = args
+        (
+            t1,
+            f1,
+            t2,
+            f2,
+            t3,
+            f3,
+            t4,
+            f4,
+            t5,
+            f5,
+            t6,
+            f6,
+            t7,
+            f7,
+            t8,
+            f8,
+            t9,
+            f9,
+            t10,
+            f10,
+            t11,
+            f11,
+        ) = args
 
         self.index = index
         self.i = int(i)
@@ -2130,11 +3759,32 @@ class TransformerImpedanceCorrection(object):
         self.f11 = float(f11)
 
     def __str__(self):
-        data = [self.i, self.t1, self.f1, self.t2, self.f2, self.t3, self.f3,
-                self.t4, self.f4, self.t5, self.f5, self.t6, self.f6, self.t7,
-                self.f7, self.t8, self.f8, self.t9, self.f9, self.t10, self.f10,
-                self.t11, self.f11]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.i,
+            self.t1,
+            self.f1,
+            self.t2,
+            self.f2,
+            self.t3,
+            self.f3,
+            self.t4,
+            self.f4,
+            self.t5,
+            self.f5,
+            self.t6,
+            self.f6,
+            self.t7,
+            self.f7,
+            self.t8,
+            self.f8,
+            self.t9,
+            self.f9,
+            self.t10,
+            self.f10,
+            self.t11,
+            self.f11,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -2147,26 +3797,49 @@ class TransformerImpedanceCorrection(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         return NotImplemented
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
-        data = [self.i, self.t1, self.f1, self.t2, self.f2, self.t3, self.f3,
-                self.t4, self.f4, self.t5, self.f5, self.t6, self.f6, self.t7,
-                self.f7, self.t8, self.f8, self.t9, self.f9, self.t10, self.f10,
-                self.t11, self.f11]
+        data = [
+            self.i,
+            self.t1,
+            self.f1,
+            self.t2,
+            self.f2,
+            self.t3,
+            self.f3,
+            self.t4,
+            self.f4,
+            self.t5,
+            self.f5,
+            self.t6,
+            self.f6,
+            self.t7,
+            self.f7,
+            self.t8,
+            self.f8,
+            self.t9,
+            self.f9,
+            self.t10,
+            self.f10,
+            self.t11,
+            self.f11,
+        ]
 
-        return ', '.join([_psse_str(x) for x in data])
+        return ", ".join([_psse_str(x) for x in data])
 
 
 MULTISECTION_LINE_DEFAULTS = ["&1", 1]
+
+
 class MultiSectionLineGrouping(object):
     def __init__(self, index, i, j, id, met, *dumi):
-        '''This data structure contains Multi-Section Line Grouping parameters
+        """This data structure contains Multi-Section Line Grouping parameters
 
         Args:
             index (int) : unique transformer impedence correction identifier
@@ -2175,7 +3848,7 @@ class MultiSectionLineGrouping(object):
             id (str) : grouping identifier
             met (int) : metered end flag
             dumi (int) : bus numbers of dummy buses
-        '''
+        """
 
         args = [id, met]
         _set_defaults(args, MULTISECTION_LINE_DEFAULTS)
@@ -2187,7 +3860,7 @@ class MultiSectionLineGrouping(object):
         self.id = unquote_string(id)
         self.met = int(met)
         for n, dum in enumerate(dumi):
-            setattr(self, "dum{0}".format(n+1), int(dum))
+            setattr(self, "dum{0}".format(n + 1), int(dum))
 
     def __str__(self):
         data = [self.i, self.j, self.id, self.met]
@@ -2196,7 +3869,7 @@ class MultiSectionLineGrouping(object):
                 data.append(getattr(self, "dum{0}".format(i)))
             else:
                 break
-        return ' '.join([str(x) for x in data])
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -2209,13 +3882,13 @@ class MultiSectionLineGrouping(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         return NotImplemented
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
         data = [self.i, self.j, self.id, self.met]
         dumi = []
@@ -2225,13 +3898,15 @@ class MultiSectionLineGrouping(object):
             else:
                 break
 
-        return ', '.join([_psse_str(x) for x in data])
+        return ", ".join([_psse_str(x) for x in data])
 
 
 INTERAREA_TRANSFER_DEFAULTS = [1, 0.0]
+
+
 class InterareaTransfer(object):
     def __init__(self, index, arfrom, arto, trid, ptran):
-        '''This data structure contains Interarea Transfer parameters
+        """This data structure contains Interarea Transfer parameters
 
         Args:
             index (int) : unique interarea transfer identifier
@@ -2239,7 +3914,7 @@ class InterareaTransfer(object):
             arto (int) : to area identifier
             trid (str) : interarea transfer identifier
             ptran (float) : MW of transfer
-        '''
+        """
 
         args = [trid, ptran]
         _set_defaults(args, INTERAREA_TRANSFER_DEFAULTS)
@@ -2253,7 +3928,7 @@ class InterareaTransfer(object):
 
     def __str__(self):
         data = [self.arfrom, self.arto, self.trid, self.ptran]
-        return ' '.join([str(x) for x in data])
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -2266,25 +3941,95 @@ class InterareaTransfer(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         return NotImplemented
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
         data = [self.arfrom, self.arto, self.trid, self.ptran]
 
-        return ', '.join([_psse_str(x) for x in data])
+        return ", ".join([_psse_str(x) for x in data])
 
 
-INDUCTION_MACHINE_DEFAULTS = [1, 1, 1, 2, 1, 1, 1, 1, 1, 100.0, 0.0, 1, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 2.5, 999.0, 999.0, 999.0, 999.0, 0.0, 1.0, 0.0, 1.2, 0.0, 0.0, 0.0, 1]
+INDUCTION_MACHINE_DEFAULTS = [
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    100.0,
+    0.0,
+    1,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    0.0,
+    0.0,
+    2.5,
+    999.0,
+    999.0,
+    999.0,
+    999.0,
+    0.0,
+    1.0,
+    0.0,
+    1.2,
+    0.0,
+    0.0,
+    0.0,
+    1,
+]
+
+
 class InductionMachine(object):
-    def __init__(self, index, i, id, stat, scode, dcode, area, zone, owner, tcode, bcode, mbase,
-                    ratekv, pcode, pset, h, a, b, d, e, ra, xa, xm, r1, x1, r2, x2, x3, e1, se1,
-                    e2, se2, ia1, ia2, xamult):
-        '''This data structure contains Induction Machine parameters
+    def __init__(
+        self,
+        index,
+        i,
+        id,
+        stat,
+        scode,
+        dcode,
+        area,
+        zone,
+        owner,
+        tcode,
+        bcode,
+        mbase,
+        ratekv,
+        pcode,
+        pset,
+        h,
+        a,
+        b,
+        d,
+        e,
+        ra,
+        xa,
+        xm,
+        r1,
+        x1,
+        r2,
+        x2,
+        x3,
+        e1,
+        se1,
+        e2,
+        se2,
+        ia1,
+        ia2,
+        xamult,
+    ):
+        """This data structure contains Induction Machine parameters
 
         Args:
             index (int) : unique interarea transfer identifier
@@ -2322,11 +4067,77 @@ class InductionMachine(object):
             ia1 (float) : stator current
             ia2 (float) : stator current
             xamult (float) : multiplier for saturated value
-        '''
+        """
 
-        args = [id, stat, scode, dcode, area, zone, owner, tcode, bcode, mbase, ratekv, pcode, h, a, b, d, e, ra, xa, xm, r1, x1, r2, x2, x3, e1, se1, e2, se2, ia1, ia2, xamult]
+        args = [
+            id,
+            stat,
+            scode,
+            dcode,
+            area,
+            zone,
+            owner,
+            tcode,
+            bcode,
+            mbase,
+            ratekv,
+            pcode,
+            h,
+            a,
+            b,
+            d,
+            e,
+            ra,
+            xa,
+            xm,
+            r1,
+            x1,
+            r2,
+            x2,
+            x3,
+            e1,
+            se1,
+            e2,
+            se2,
+            ia1,
+            ia2,
+            xamult,
+        ]
         _set_defaults(args, INDUCTION_MACHINE_DEFAULTS)
-        id, stat, scode, dcode, area, zone, owner, tcode, bcode, mbase, ratekv, pcode, h, a, b, d, e, ra, xa, xm, r1, x1, r2, x2, x3, e1, se1, e2, se2, ia1, ia2, xamult = args
+        (
+            id,
+            stat,
+            scode,
+            dcode,
+            area,
+            zone,
+            owner,
+            tcode,
+            bcode,
+            mbase,
+            ratekv,
+            pcode,
+            h,
+            a,
+            b,
+            d,
+            e,
+            ra,
+            xa,
+            xm,
+            r1,
+            x1,
+            r2,
+            x2,
+            x3,
+            e1,
+            se1,
+            e2,
+            se2,
+            ia1,
+            ia2,
+            xamult,
+        ) = args
 
         self.index = index
         self.i = int(i)
@@ -2365,12 +4176,43 @@ class InductionMachine(object):
         self.xamult = float(xamult)
 
     def __str__(self):
-        data = [self.i, self.id, self.stat, self.scode, self.dcode, self.area, self.zone,
-                self.owner, self.tcode, self.bcode, self.mbase, self.ratekv, self.pcode,
-                self.pset, self.h, self.a, self.b, self.d, self.e, self.ra, self.xa,
-                self.xm, self.r1, self.x1, self.r2, self.x2, self.x3, self.e1, self.se1,
-                self.e2, self.se2, self.ia1, self.ia2, self.xamult]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.i,
+            self.id,
+            self.stat,
+            self.scode,
+            self.dcode,
+            self.area,
+            self.zone,
+            self.owner,
+            self.tcode,
+            self.bcode,
+            self.mbase,
+            self.ratekv,
+            self.pcode,
+            self.pset,
+            self.h,
+            self.a,
+            self.b,
+            self.d,
+            self.e,
+            self.ra,
+            self.xa,
+            self.xm,
+            self.r1,
+            self.x1,
+            self.r2,
+            self.x2,
+            self.x3,
+            self.e1,
+            self.se1,
+            self.e2,
+            self.se2,
+            self.ia1,
+            self.ia2,
+            self.xamult,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -2383,26 +4225,57 @@ class InductionMachine(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         return NotImplemented
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
 
-        data = [self.i, self.id, self.stat, self.scode, self.dcode, self.area, self.zone,
-                self.owner, self.tcode, self.bcode, self.mbase, self.ratekv, self.pcode,
-                self.pset, self.h, self.a, self.b, self.d, self.e, self.ra, self.xa,
-                self.xm, self.r1, self.x1, self.r2, self.x2, self.x3, self.e1, self.se1,
-                self.e2, self.se2, self.ia1, self.ia2, self.xamult]
+        data = [
+            self.i,
+            self.id,
+            self.stat,
+            self.scode,
+            self.dcode,
+            self.area,
+            self.zone,
+            self.owner,
+            self.tcode,
+            self.bcode,
+            self.mbase,
+            self.ratekv,
+            self.pcode,
+            self.pset,
+            self.h,
+            self.a,
+            self.b,
+            self.d,
+            self.e,
+            self.ra,
+            self.xa,
+            self.xm,
+            self.r1,
+            self.x1,
+            self.r2,
+            self.x2,
+            self.x3,
+            self.e1,
+            self.se1,
+            self.e2,
+            self.se2,
+            self.ia1,
+            self.ia2,
+            self.xamult,
+        ]
 
-        return ', '.join([_psse_str(x) for x in data])
+        return ", ".join([_psse_str(x) for x in data])
 
 
 class MultiTerminalDCLine(object):
     def __init__(self, index, params, nconv, ndcbs, ndcln):
-        '''This data structure contains Multi-Terminal DC Line parameters
+        """This data structure contains Multi-Terminal DC Line parameters
 
         Args:
             index (int) : unique interarea transfer identifier
@@ -2410,7 +4283,7 @@ class MultiTerminalDCLine(object):
             nconv (list(MultiTerminalDCLineConverter)) : next nconv lines of MutliTerminal DC Line entries
             ndcbs (list(MultiTerminalDCLineDCBus)) : next ndcbs lines of MutliTerminal DC Line entries
             ndcln (list(MultiTerminalDCLineDCLink)) : next ndcln lines of MutliTerminal DC Line entries
-        '''
+        """
         self.index = index
         self.params = params
         self.converters = nconv
@@ -2419,7 +4292,7 @@ class MultiTerminalDCLine(object):
 
     def __str__(self):
         data = []
-        return ' '.join([str(x) for x in data])
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -2432,24 +4305,26 @@ class MultiTerminalDCLine(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         return NotImplemented
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
+        """Returns: a pss/e encoding of this data structure as a string"""
         data = [self.params]
         data.extend(self.converters)
         data.extend(self.dc_buses)
         data.extend(self.dc_links)
-        return '\n'.join([x.to_psse() for x in data])
+        return "\n".join([x.to_psse() for x in data])
 
 
 MTDCL_PARAMETER_DEFAULTS = [0, 0.0, 0]
+
+
 class MultiTerminalDCLineParameters(object):
     def __init__(self, name, nconv, ndcbs, ndcln, mdc, vconv, vcmod, vconvn):
-        '''This data structure contains MultiTerminal DC Line first-line parameters
+        """This data structure contains MultiTerminal DC Line first-line parameters
 
         Args:
             name (str) : name of dc line
@@ -2460,7 +4335,7 @@ class MultiTerminalDCLineParameters(object):
             vconv (int) : bus number of positive pole controlling ac converter station
             vcmod (float) : mode switch dc voltage
             vconvn (int) : bus number of negative pole controlling ac converter station
-        '''
+        """
 
         args = [mdc, vcmod, vconvn]
         _set_defaults(args, MTDCL_PARAMETER_DEFAULTS)
@@ -2476,8 +4351,17 @@ class MultiTerminalDCLineParameters(object):
         self.vconvn = int(vconvn)
 
     def __str__(self):
-        data = [quote_string(self.name), self.nconv, self.ndcbs, self.ndcln, self.mdc, self.vconv, self.vcmod, self.vconvn]
-        return ' '.join([str(x) for x in data])
+        data = [
+            quote_string(self.name),
+            self.nconv,
+            self.ndcbs,
+            self.ndcln,
+            self.mdc,
+            self.vconv,
+            self.vcmod,
+            self.vconvn,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -2490,22 +4374,50 @@ class MultiTerminalDCLineParameters(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         return NotImplemented
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
-        data = [quote_string(self.name), self.nconv, self.ndcbs, self.ndcln, self.mdc, self.vconv, self.vcmod, self.vconvn]
-        return ', '.join([_psse_str(x) for x in data])
-
+        """Returns: a pss/e encoding of this data structure as a string"""
+        data = [
+            quote_string(self.name),
+            self.nconv,
+            self.ndcbs,
+            self.ndcln,
+            self.mdc,
+            self.vconv,
+            self.vcmod,
+            self.vconvn,
+        ]
+        return ", ".join([_psse_str(x) for x in data])
 
 
 MTDCL_CONVERTER_DEFAULTS = [1.0, 1.0, 1.5, 0.51, 0.00625, 1, 0.0, 1]
+
+
 class MultiTerminalDCLineConverter(object):
-    def __init__(self, ib, n, angmx, angmn, rc, xc, ebas, tr, tap, tpmx, tpmn, tstp, setvl, dcpf, marg, cnvcod):
-        '''This data structure contains MultiTerminal DC Line Converter parameters
+    def __init__(
+        self,
+        ib,
+        n,
+        angmx,
+        angmn,
+        rc,
+        xc,
+        ebas,
+        tr,
+        tap,
+        tpmx,
+        tpmn,
+        tstp,
+        setvl,
+        dcpf,
+        marg,
+        cnvcod,
+    ):
+        """This data structure contains MultiTerminal DC Line Converter parameters
 
         Args:
             ib (int) : ac converter bus number
@@ -2524,7 +4436,7 @@ class MultiTerminalDCLineConverter(object):
             dcpf (float) : converter participation factor
             marg (float) : rectifier margin
             cnvcod (int) : converter code
-        '''
+        """
 
         args = [tr, tap, tpmx, tpmn, tstp, dcpf, marg, cnvcod]
         _set_defaults(args, MTDCL_CONVERTER_DEFAULTS)
@@ -2548,10 +4460,25 @@ class MultiTerminalDCLineConverter(object):
         self.cnvcod = int(cnvcod)
 
     def __str__(self):
-        data = [self.ib, self.n, self.angmx, self.angmn, self.rc, self.xc,
-                self.ebas, self.tr, self.tap, self.tpmx, self.tpmn, self.tstp,
-                self.setvl, self.dcpf, self.marg, self.cnvcod]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.ib,
+            self.n,
+            self.angmx,
+            self.angmn,
+            self.rc,
+            self.xc,
+            self.ebas,
+            self.tr,
+            self.tap,
+            self.tpmx,
+            self.tpmn,
+            self.tstp,
+            self.setvl,
+            self.dcpf,
+            self.marg,
+            self.cnvcod,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -2564,24 +4491,40 @@ class MultiTerminalDCLineConverter(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         return NotImplemented
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
-        data = [self.ib, self.n, self.angmx, self.angmn, self.rc, self.xc,
-                self.ebas, self.tr, self.tap, self.tpmx, self.tpmn, self.tstp,
-                self.setvl, self.dcpf, self.marg, self.cnvcod]
-        return ', '.join([_psse_str(x) for x in data])
-
+        """Returns: a pss/e encoding of this data structure as a string"""
+        data = [
+            self.ib,
+            self.n,
+            self.angmx,
+            self.angmn,
+            self.rc,
+            self.xc,
+            self.ebas,
+            self.tr,
+            self.tap,
+            self.tpmx,
+            self.tpmn,
+            self.tstp,
+            self.setvl,
+            self.dcpf,
+            self.marg,
+            self.cnvcod,
+        ]
+        return ", ".join([_psse_str(x) for x in data])
 
 
 MTDCL_BUS_DEFAULTS = [0.0, 1, 1, "            ", 0, 0.0, 1]
+
+
 class MultiTerminalDCLineDCBus(object):
     def __init__(self, idc, ib, area, zone, dcname, idc2, rgrnd, owner):
-        '''This data structure contains MultiTerminal DC Line DC Bus parameters
+        """This data structure contains MultiTerminal DC Line DC Bus parameters
 
         Args:
             idc (int) : dc bus number
@@ -2593,7 +4536,7 @@ class MultiTerminalDCLineDCBus(object):
             rgrnd (float) : resistance to ground
             owner (int) : owner number
 
-        '''
+        """
 
         args = [ib, area, zone, dcname, idc2, rgrnd, owner]
         _set_defaults(args, MTDCL_BUS_DEFAULTS)
@@ -2609,8 +4552,17 @@ class MultiTerminalDCLineDCBus(object):
         self.owner = int(owner)
 
     def __str__(self):
-        data = [self.idc, self.ib, self.area, self.zone, quote_string(self.dcname), self.idc2, self.rgrnd, self.owner]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.idc,
+            self.ib,
+            self.area,
+            self.zone,
+            quote_string(self.dcname),
+            self.idc2,
+            self.rgrnd,
+            self.owner,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -2623,21 +4575,32 @@ class MultiTerminalDCLineDCBus(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         return NotImplemented
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
-        data = [self.idc, self.ib, self.area, self.zone, quote_string(self.dcname), self.idc2, self.rgrnd, self.owner]
-        return ', '.join([_psse_str(x) for x in data])
+        """Returns: a pss/e encoding of this data structure as a string"""
+        data = [
+            self.idc,
+            self.ib,
+            self.area,
+            self.zone,
+            quote_string(self.dcname),
+            self.idc2,
+            self.rgrnd,
+            self.owner,
+        ]
+        return ", ".join([_psse_str(x) for x in data])
 
 
 MTDCL_LINE_DEFAULTS = [1, 1, 0.0]
+
+
 class MultiTerminalDCLineDCLink(object):
     def __init__(self, idc, jdc, dcckt, met, rdc, ldc):
-        '''This data structure contains MultiTerminal DC Line DC Link parameters
+        """This data structure contains MultiTerminal DC Line DC Link parameters
 
         Args:
             idc (int) : from bus dc number
@@ -2646,7 +4609,7 @@ class MultiTerminalDCLineDCLink(object):
             met (int) : metered end flag
             rdc (float) : dc link resistance
             ldc (float) : dc link inductance
-        '''
+        """
 
         args = [dcckt, met, ldc]
         _set_defaults(args, MTDCL_LINE_DEFAULTS)
@@ -2660,8 +4623,15 @@ class MultiTerminalDCLineDCLink(object):
         self.ldc = float(ldc)
 
     def __str__(self):
-        data = [self.idc, self.jdc, quote_string(self.dcckt), self.met, self.rdc, self.ldc]
-        return ' '.join([str(x) for x in data])
+        data = [
+            self.idc,
+            self.jdc,
+            quote_string(self.dcckt),
+            self.met,
+            self.rdc,
+            self.ldc,
+        ]
+        return " ".join([str(x) for x in data])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -2674,12 +4644,19 @@ class MultiTerminalDCLineDCLink(object):
         return NotImplemented
 
     def validate(self):
-        '''Checks that this data structure conforms to the pss/e data
+        """Checks that this data structure conforms to the pss/e data
         specification
-        '''
+        """
         return NotImplemented
 
     def to_psse(self):
-        '''Returns: a pss/e encoding of this data structure as a string'''
-        data = [self.idc, self.jdc, quote_string(self.dcckt), self.met, self.rdc, self.ldc]
-        return ', '.join([_psse_str(x) for x in data])
+        """Returns: a pss/e encoding of this data structure as a string"""
+        data = [
+            self.idc,
+            self.jdc,
+            quote_string(self.dcckt),
+            self.met,
+            self.rdc,
+            self.ldc,
+        ]
+        return ", ".join([_psse_str(x) for x in data])

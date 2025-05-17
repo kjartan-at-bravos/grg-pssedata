@@ -6,6 +6,7 @@ import re
 import warnings
 import sys
 import collections
+from pathlib import Path
 
 from grg_pssedata.struct import Bus
 from grg_pssedata.struct import Load
@@ -64,7 +65,7 @@ def expand_commas(list):
     return expanded_list
 
 
-def parse_psse_case_file(psse_file_name):
+def parse_psse_case_file(psse_file_name: str | Path):
     '''opens the given path and parses it as pss/e data
 
     Args:
@@ -185,7 +186,7 @@ def parse_psse_case_lines(lines):
     load_index_offset = line_index
     while parse_line(lines[line_index])[0][0].strip() not in psse_terminuses:
         line_parts, comment = parse_line(lines[line_index], LineRequirements(line_index, 13, 14, "load"))
-        loads.append(Load(line_index - load_index_offset, *line_parts))
+        loads.append(Load(line_index - load_index_offset, *line_parts, comment=comment))
         line_index += 1
     print_err('parsed {} loads'.format(len(loads)))
 
@@ -205,7 +206,7 @@ def parse_psse_case_lines(lines):
     gen_index_offset = line_index
     while parse_line(lines[line_index])[0][0].strip() not in psse_terminuses:
         line_parts, comment = parse_line(lines[line_index], LineRequirements(line_index, 20, 28, "generator"))
-        generators.append(Generator(line_index - gen_index_offset, *line_parts))
+        generators.append(Generator(line_index - gen_index_offset, *line_parts, comment=comment))
         line_index += 1
     print_err('parsed {} generators'.format(len(generators)))
 
@@ -218,7 +219,7 @@ def parse_psse_case_lines(lines):
         #line = expand_commas(line)
         line_parts, comment = parse_line(lines[line_index], LineRequirements(line_index, 18, 24, "branch"))
         #print(line_parts)
-        branches.append(Branch(line_index - branch_index_offset, *line_parts))
+        branches.append(Branch(line_index - branch_index_offset, *line_parts, comment=comment))
         line_index += 1
     print_err('parsed {} branches'.format(len(branches)))
 
